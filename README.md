@@ -1,38 +1,26 @@
-# 🧠 Pneumonia Detection Using CNN — A Deep Learning Approach to Save Lives
+# 🧠 CNN for Pneumonia Detection in Ugandan Children
 
-### Fine-tuned Convolutional Neural Network for early-stage pneumonia detection in Sub-Saharan Africa
-
----
-
-## 📌 Project Overview
-
-Pneumonia is the leading infectious cause of death in children under 5 — particularly in **Sub-Saharan Africa**, where early detection tools are often lacking due to resource constraints.
-
-This project presents a **fine-tuned Convolutional Neural Network (CNN)** model trained on chest X-ray data to accurately and quickly detect pneumonia. Originally built as part of an academic deep learning course, the model was improved through **parameter tuning and data augmentation** to maximize performance.
-
-> 🎯 **Goal:** Create a low-cost, high-accuracy model for early pneumonia detection, deployable in rural or underserved areas.
+A deep learning project leveraging Convolutional Neural Networks (CNNs) to detect pneumonia from chest X-rays — built with the aim to reduce misdiagnosis and mortality in resource-constrained settings like Sub-Saharan Africa.
 
 ---
 
-## 🧪 Problem
+## 🌍 Project Context
 
-In many regions of Africa, pneumonia goes undiagnosed until it’s too late. The Gates Foundation and similar organizations aim to solve problems like these at scale — but they require affordable, scalable, and deployable AI solutions.
+Pneumonia is the **leading infectious killer of children under five** in Uganda, responsible for up to **16% of all child deaths**. Despite this, over **400,000 undiagnosed positive cases** go untreated due to **poor diagnostic access**.
+
+This project addresses that gap by fine-tuning a CNN architecture for high-accuracy image-based pneumonia detection. The model was later pitched as a scalable solution for real-world healthcare deployment in Uganda.
 
 ---
 
-## 🧠 Model Details
+## 🧪 Model Highlights
 
-- **Base Model**: Provided CNN architecture
-- **Tuning Applied**: Batch size, learning rate, dropout rates
-- **Techniques Used**:  
-  - Data augmentation (flipping, rotation, rescaling)  
-  - Early stopping  
-  - Regularization  
-  - Epoch tuning  
-- **Evaluation Metrics**:  
-  - ✅ Accuracy: `~95.6%`  
-  - ✅ AUC: `~98.75%`  
-  - ✅ Recall: High sensitivity to positive cases (crucial for early detection)
+| Model Type        | Accuracy | AUC     | Precision | Recall   |
+|-------------------|----------|---------|-----------|----------|
+| CNN (Baseline)    | 93.39%   | 98.76%  | 93.42%    | 93.39%   |
+| CNN (Final Tuning)| **95.65%** | **98.75%** | **95.67%**  | **95.66%**  |
+
+- Fine-tuned using **data augmentation, batch normalization**, and hyperparameter tuning.
+- Performance validated using **confusion matrices**, **ROC-AUC curves**, and **Kaggle test sets**.
 
 ---
 
@@ -46,60 +34,63 @@ cnn-pneumonia-detection/ ├
 ├── README.md # You are here
 ```
 
+---
+
+## 📑 Deliverables
+
+- 📘 **Notebook**: [`cnn_pneumonia.ipynb`](cnn_pneumonia.ipynb)  
+- 📄 **HTML Report**: [`cnn_pneumonia.html`](cnn_pneumonia.html)  
+- 🧾 **Pitch Memo**: [`pneumonia_memo.pdf`](pneumonia_memo.pdf)  
+- 🎥 **Presentation Slides**: [`DeepLearningUganda.pdf`](DeepLearningUganda.pdf)
 
 ---
 
-## 📄 Memo to the Gates Foundation
+## 🏥 Real-World Application: Uganda Deployment
 
-Included in this repo is a brief proposal outlining the **moral and operational case** for deploying this AI tool to help screen children in rural clinics.
+This project was pitched for deployment in Ugandan hospitals, backed by field-specific research and economic analysis.
 
-> _"Even a 20% reduction in late pneumonia detection could save tens of thousands of lives annually. With fine-tuned, open-source CNN models, this isn’t science fiction — it’s deployment-ready reality."_  
-> — *Memo to the Gates Foundation*
+### Key Proposal Points:
+- **Pilot with 3 hospitals**, training staff and validating in-clinic model performance.
+- **Full-scale deployment to 50+ rural clinics** with offline functionality.
+- **Integration into national healthcare system** for long-term sustainability.
 
----
-
-## 📊 Results Preview
-
-> AUC: **0.9875**  
-> Accuracy: **95.6%**  
-> Confusion matrix shows strong true positive rate for pneumonia cases.
+Read the full memo: [`pneumonia_memo.pdf`](pneumonia_memo.pdf)
 
 ---
 
-## 🛠️ How to Run
+## 🚀 Technologies Used
 
-1. Clone the repo
-2. Open `cnn_pneumonia.ipynb` in Jupyter or VS Code
-3. Run all cells (data is loaded from Kaggle or local directory)
-4. Review the model outputs, ROC curve, and training logs
+- Python, Keras, TensorFlow
+- Jupyter Notebook
+- Matplotlib, Seaborn, scikit-learn
+- CNN Architecture for Binary Classification
 
 ---
 
-## 👨‍💻 Author
+## 👤 Author
 
 **Asad Adnan**  
-Master’s in Business Analytics, University of Notre Dame  
-*Bringing deep learning to public health — one model at a time.*
-
-📫 [LinkedIn](https://www.linkedin.com/in/asadadnan)  
-📧 Email: asad@example.com *(update this if you're publishing)*
+Master’s in Business Analytics — University of Notre Dame  
+*Exploring data-driven solutions in public health, development, and strategy.*
 
 ---
+
+## 📌 Future Directions
+
+- Improve class balance through smarter oversampling
+- Integrate clinical metadata alongside X-ray imaging
+- Build a user-facing diagnostic app for clinics with limited radiologists
+- Integrate into a **mobile diagnostic app**
+- Validate performance on **real-world clinical images**
+- Extend the model to **multi-disease classification** (e.g. TB, Covid, asthma)
+- Partner with NGOs for **pilot deployment in Uganda**
+
 
 ## 🤝 Acknowledgments
 
 - Instructor-provided base CNN architecture
 - Kaggle dataset on pediatric pneumonia X-rays
 - Guidance from peers and mentors at the University of Notre Dame
-
----
-
-## 🧭 Future Directions
-
-- Integrate into a **mobile diagnostic app**
-- Validate performance on **real-world clinical images**
-- Extend the model to **multi-disease classification** (e.g. TB, Covid, asthma)
-- Partner with NGOs for **pilot deployment in Uganda or Nigeria**
 
 ---
 
