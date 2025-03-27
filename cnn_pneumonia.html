@@ -1,0 +1,1979 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.40">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>cnn_pneumonia</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script><script src="cnn_pneumonia_files/libs/clipboard/clipboard.min.js"></script>
+<script src="cnn_pneumonia_files/libs/quarto-html/quarto.js"></script>
+<script src="cnn_pneumonia_files/libs/quarto-html/popper.min.js"></script>
+<script src="cnn_pneumonia_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="cnn_pneumonia_files/libs/quarto-html/anchor.min.js"></script>
+<link href="cnn_pneumonia_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="cnn_pneumonia_files/libs/quarto-html/quarto-syntax-highlighting-549806ee2085284f45b00abea8c6df48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="cnn_pneumonia_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="cnn_pneumonia_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="cnn_pneumonia_files/libs/bootstrap/bootstrap-8a79a254b8e706d3c925cde0a310d4f0.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
+
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
+
+
+</head>
+
+<body class="fullcontent">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+
+
+
+<div id="cell-0" class="cell" data-cell_id="1cc2015b62804537bc0f7ecdba10f8ed" data-deepnote_cell_type="code" data-deepnote_to_be_reexecuted="false" data-execution_millis="6103" data-execution_start="1673120424163" data-source_hash="90ce38a6" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">#import os</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="co">#os.system ("pip install keras==2.4.3")</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>pip install tensorflow</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> keras</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">'The keras version is </span><span class="sc">{}</span><span class="st">.'</span>.<span class="bu">format</span>(keras.__version__))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Defaulting to user installation because normal site-packages is not writeable
+Requirement already satisfied: tensorflow in /usr/local/lib/python3.10/site-packages (2.13.1)
+Requirement already satisfied: absl-py&gt;=1.0.0 in /usr/local/lib/python3.10/site-packages (from tensorflow) (1.4.0)
+Requirement already satisfied: astunparse&gt;=1.6.0 in /usr/local/lib/python3.10/site-packages (from tensorflow) (1.6.3)
+Requirement already satisfied: flatbuffers&gt;=23.1.21 in /usr/local/lib/python3.10/site-packages (from tensorflow) (23.5.26)
+Requirement already satisfied: gast&lt;=0.4.0,&gt;=0.2.1 in /usr/local/lib/python3.10/site-packages (from tensorflow) (0.4.0)
+Requirement already satisfied: google-pasta&gt;=0.1.1 in /usr/local/lib/python3.10/site-packages (from tensorflow) (0.2.0)
+Requirement already satisfied: grpcio&lt;2.0,&gt;=1.24.3 in /usr/local/lib/python3.10/site-packages (from tensorflow) (1.56.2)
+Requirement already satisfied: h5py&gt;=2.9.0 in /usr/local/lib/python3.10/site-packages (from tensorflow) (3.7.0)
+Requirement already satisfied: keras&lt;2.14,&gt;=2.13.1 in /usr/local/lib/python3.10/site-packages (from tensorflow) (2.13.1)
+Requirement already satisfied: libclang&gt;=13.0.0 in /usr/local/lib/python3.10/site-packages (from tensorflow) (14.0.1)
+Requirement already satisfied: numpy&lt;=1.24.3,&gt;=1.22 in /usr/local/lib/python3.10/site-packages (from tensorflow) (1.23.5)
+Requirement already satisfied: opt-einsum&gt;=2.3.2 in /usr/local/lib/python3.10/site-packages (from tensorflow) (3.3.0)
+Requirement already satisfied: packaging in /usr/local/lib/python3.10/site-packages (from tensorflow) (22.0)
+Requirement already satisfied: protobuf!=4.21.0,!=4.21.1,!=4.21.2,!=4.21.3,!=4.21.4,!=4.21.5,&lt;5.0.0dev,&gt;=3.20.3 in /usr/local/lib/python3.10/site-packages (from tensorflow) (3.20.3)
+Requirement already satisfied: setuptools in /usr/local/lib/python3.10/site-packages (from tensorflow) (58.1.0)
+Requirement already satisfied: six&gt;=1.12.0 in /usr/local/lib/python3.10/site-packages (from tensorflow) (1.16.0)
+Requirement already satisfied: tensorboard&lt;2.14,&gt;=2.13 in /usr/local/lib/python3.10/site-packages (from tensorflow) (2.13.0)
+Requirement already satisfied: tensorflow-estimator&lt;2.14,&gt;=2.13.0 in /usr/local/lib/python3.10/site-packages (from tensorflow) (2.13.0)
+Requirement already satisfied: termcolor&gt;=1.1.0 in /usr/local/lib/python3.10/site-packages (from tensorflow) (1.1.0)
+Requirement already satisfied: typing-extensions&lt;4.6.0,&gt;=3.6.6 in /usr/local/lib/python3.10/site-packages (from tensorflow) (4.5.0)
+Requirement already satisfied: wrapt&gt;=1.11.0 in /usr/local/lib/python3.10/site-packages (from tensorflow) (1.14.1)
+Requirement already satisfied: tensorflow-io-gcs-filesystem&gt;=0.23.1 in /usr/local/lib/python3.10/site-packages (from tensorflow) (0.26.0)
+Requirement already satisfied: wheel&lt;1.0,&gt;=0.23.0 in /usr/local/lib/python3.10/site-packages (from astunparse&gt;=1.6.0-&gt;tensorflow) (0.37.1)
+Requirement already satisfied: google-auth&lt;3,&gt;=1.6.3 in /usr/local/lib/python3.10/site-packages (from tensorboard&lt;2.14,&gt;=2.13-&gt;tensorflow) (2.16.2)
+Requirement already satisfied: google-auth-oauthlib&lt;1.1,&gt;=0.5 in /usr/local/lib/python3.10/site-packages (from tensorboard&lt;2.14,&gt;=2.13-&gt;tensorflow) (1.0.0)
+Requirement already satisfied: markdown&gt;=2.6.8 in /usr/local/lib/python3.10/site-packages (from tensorboard&lt;2.14,&gt;=2.13-&gt;tensorflow) (3.3.7)
+Requirement already satisfied: requests&lt;3,&gt;=2.21.0 in /usr/local/lib/python3.10/site-packages (from tensorboard&lt;2.14,&gt;=2.13-&gt;tensorflow) (2.28.1)
+Requirement already satisfied: tensorboard-data-server&lt;0.8.0,&gt;=0.7.0 in /usr/local/lib/python3.10/site-packages (from tensorboard&lt;2.14,&gt;=2.13-&gt;tensorflow) (0.7.1)
+Requirement already satisfied: werkzeug&gt;=1.0.1 in /usr/local/lib/python3.10/site-packages (from tensorboard&lt;2.14,&gt;=2.13-&gt;tensorflow) (2.1.2)
+Requirement already satisfied: cachetools&lt;6.0,&gt;=2.0.0 in /usr/local/lib/python3.10/site-packages (from google-auth&lt;3,&gt;=1.6.3-&gt;tensorboard&lt;2.14,&gt;=2.13-&gt;tensorflow) (5.3.1)
+Requirement already satisfied: pyasn1-modules&gt;=0.2.1 in /usr/local/lib/python3.10/site-packages (from google-auth&lt;3,&gt;=1.6.3-&gt;tensorboard&lt;2.14,&gt;=2.13-&gt;tensorflow) (0.2.8)
+Requirement already satisfied: rsa&lt;5,&gt;=3.1.4 in /usr/local/lib/python3.10/site-packages (from google-auth&lt;3,&gt;=1.6.3-&gt;tensorboard&lt;2.14,&gt;=2.13-&gt;tensorflow) (4.8)
+Requirement already satisfied: requests-oauthlib&gt;=0.7.0 in /usr/local/lib/python3.10/site-packages (from google-auth-oauthlib&lt;1.1,&gt;=0.5-&gt;tensorboard&lt;2.14,&gt;=2.13-&gt;tensorflow) (1.3.1)
+Requirement already satisfied: charset-normalizer&lt;3,&gt;=2 in /usr/local/lib/python3.10/site-packages (from requests&lt;3,&gt;=2.21.0-&gt;tensorboard&lt;2.14,&gt;=2.13-&gt;tensorflow) (2.1.0)
+Requirement already satisfied: idna&lt;4,&gt;=2.5 in /usr/local/lib/python3.10/site-packages (from requests&lt;3,&gt;=2.21.0-&gt;tensorboard&lt;2.14,&gt;=2.13-&gt;tensorflow) (3.3)
+Requirement already satisfied: urllib3&lt;1.27,&gt;=1.21.1 in /usr/local/lib/python3.10/site-packages (from requests&lt;3,&gt;=2.21.0-&gt;tensorboard&lt;2.14,&gt;=2.13-&gt;tensorflow) (1.26.9)
+Requirement already satisfied: certifi&gt;=2017.4.17 in /usr/local/lib/python3.10/site-packages (from requests&lt;3,&gt;=2.21.0-&gt;tensorboard&lt;2.14,&gt;=2.13-&gt;tensorflow) (2022.6.15)
+Requirement already satisfied: pyasn1&lt;0.5.0,&gt;=0.4.6 in /usr/local/lib/python3.10/site-packages (from pyasn1-modules&gt;=0.2.1-&gt;google-auth&lt;3,&gt;=1.6.3-&gt;tensorboard&lt;2.14,&gt;=2.13-&gt;tensorflow) (0.4.8)
+Requirement already satisfied: oauthlib&gt;=3.0.0 in /usr/local/lib/python3.10/site-packages (from requests-oauthlib&gt;=0.7.0-&gt;google-auth-oauthlib&lt;1.1,&gt;=0.5-&gt;tensorboard&lt;2.14,&gt;=2.13-&gt;tensorflow) (3.2.0)</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>2025-02-27 04:22:52.289580: I tensorflow/core/util/port.cc:110] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+2025-02-27 04:22:52.821859: I tensorflow/core/platform/cpu_feature_guard.cc:182] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: AVX2 AVX512F AVX512_VNNI FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+WARNING:root:Limited tf.compat.v2.summary API due to missing TensorBoard installation.
+WARNING:root:Limited tf.compat.v2.summary API due to missing TensorBoard installation.
+WARNING:root:Limited tf.compat.v2.summary API due to missing TensorBoard installation.
+WARNING:root:Limited tf.summary API due to missing TensorBoard installation.
+2025-02-27 04:22:54.885580: E tensorflow/compiler/xla/stream_executor/cuda/cuda_driver.cc:268] failed call to cuInit: CUDA_ERROR_NO_DEVICE: no CUDA-capable device is detected
+WARNING:root:Limited tf.compat.v2.summary API due to missing TensorBoard installation.
+WARNING:root:Limited tf.compat.v2.summary API due to missing TensorBoard installation.
+WARNING:root:Limited tf.compat.v2.summary API due to missing TensorBoard installation.</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>VOC-NOTICE: GPU memory for this assignment is capped at 1024MiB
+VOC-NOTICE: GPU memory for this assignment is capped at 1024MiB
+The keras version is 2.13.1.</code></pre>
+</div>
+</div>
+<div id="cell-1" class="cell" data-cell_id="20fb5644d3ee4eac89a688d1f88a4db6" data-deepnote_cell_type="code" data-deepnote_to_be_reexecuted="false" data-execution_millis="630" data-execution_start="1673120430269" data-source_hash="4437f931" data-execution_count="2">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># IPython display functions</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> IPython</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> IPython.display <span class="im">import</span> display, HTML, SVG, Image</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="co"># General Plotting</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>plt.style.use(<span class="st">'seaborn-paper'</span>)</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>plt.rcParams[<span class="st">'figure.figsize'</span>] <span class="op">=</span> [<span class="dv">10</span>, <span class="dv">6</span>] <span class="co">## plot size</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>plt.rcParams[<span class="st">'axes.linewidth'</span>] <span class="op">=</span> <span class="fl">2.0</span> <span class="co">#set the value globally</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a><span class="co">## notebook style and settings</span></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>display(HTML(<span class="st">"&lt;style&gt;.container { width:90% !important; }&lt;/style&gt;"</span>))</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>display(HTML(<span class="st">"&lt;style&gt;.output_png { display: table-cell; text-align: center; vertical-align: middle; } &lt;/style&gt;"</span>))</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>display(HTML(<span class="st">"&lt;style&gt;.MathJax {font-size: 100%;}&lt;/style&gt;"</span>))</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a><span class="co"># For changing background color</span></span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> set_background(color):</span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>    script <span class="op">=</span> ( <span class="st">"var cell = this.closest('.code_cell');"</span> <span class="st">"var editor = cell.querySelector('.input_area');"</span> <span class="st">"editor.style.background='</span><span class="sc">{}</span><span class="st">';"</span> <span class="st">"this.parentNode.removeChild(this)"</span> ).<span class="bu">format</span>(color)</span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>    display(HTML(<span class="st">'&lt;img src onerror="</span><span class="sc">{}</span><span class="st">"&gt;'</span>.<span class="bu">format</span>(script)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>/tmp/ipykernel_4301/3485464767.py:8: MatplotlibDeprecationWarning: The seaborn styles shipped by Matplotlib are deprecated since 3.6, as they no longer correspond to the styles shipped by seaborn. However, they will remain available as 'seaborn-v0_8-&lt;style&gt;'. Alternatively, directly use the seaborn API instead.
+  plt.style.use('seaborn-paper')</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<style>.container { width:90% !important; }</style>
+</div>
+<div class="cell-output cell-output-display">
+<style>.output_png { display: table-cell; text-align: center; vertical-align: middle; } </style>
+</div>
+<div class="cell-output cell-output-display">
+<style>.MathJax {font-size: 100%;}</style>
+</div>
+</div>
+<p>Library Imports</p>
+<div id="cell-3" class="cell" data-cell_id="6d8fd0214dcc468db6169e15673e9a1f" data-deepnote_cell_type="code" data-deepnote_to_be_reexecuted="false" data-execution_millis="577" data-execution_start="1673120430902" data-source_hash="3cfdb3f9" data-execution_count="3">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> sys</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> random</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> os <span class="im">import</span> walk</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Metrics</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.metrics <span class="im">import</span> <span class="op">*</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Keras library for deep learning</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a><span class="co"># https://keras.io/</span></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> tensorflow <span class="im">as</span> tf</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> keras</span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> keras.datasets <span class="im">import</span> mnist <span class="co"># MNIST Data set</span></span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> keras.models <span class="im">import</span> Sequential <span class="co"># Model building</span></span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> keras.layers <span class="im">import</span> <span class="op">*</span> <span class="co"># Model layers</span></span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> keras.preprocessing.image <span class="im">import</span> <span class="op">*</span></span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> tensorflow.keras.utils <span class="im">import</span> <span class="op">*</span></span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.model_selection <span class="im">import</span> train_test_split</span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> warnings</span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>warnings.simplefilter(action<span class="op">=</span><span class="st">'ignore'</span>, category<span class="op">=</span><span class="pp">FutureWarning</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<section id="helper-functions" class="level1">
+<h1>1. Helper Functions</h1>
+<section id="confusion-matrix" class="level2">
+<h2 class="anchored" data-anchor-id="confusion-matrix">1.1 Confusion Matrix</h2>
+<p>Confusion matrices are an important toolkit in every data scientist’s box. We have created a function for you that you can use to create visual confusion matrices and analyze your models.</p>
+<div id="cell-6" class="cell" data-cell_id="03c1d405acb7400b98c1c54a43bad0e7" data-deepnote_cell_type="code" data-deepnote_to_be_reexecuted="false" data-execution_millis="1" data-execution_start="1673120431485" data-source_hash="ca9c6cb7" data-execution_count="4">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> displayConfusionMatrix(confusionMatrix, precisionNegative, precisionPositive, recallNegative, recallPositive, title):</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Set font size for the plots. You can ignore this line.</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    PLOT_FONT_SIZE <span class="op">=</span> <span class="dv">14</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Set plot size. Please ignore this line</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>    plt.rcParams[<span class="st">'figure.figsize'</span>] <span class="op">=</span> [<span class="dv">5</span>, <span class="dv">5</span>]</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Transpose of confusion matrix to align the plot with the actual precision recall values. Please ignore this as well.</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>    confusionMatrix <span class="op">=</span> np.transpose(confusionMatrix)</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Plotting the confusion matrix</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>    plt.imshow(confusionMatrix, interpolation<span class="op">=</span><span class="st">'nearest'</span>,cmap<span class="op">=</span>plt.cm.Blues, vmin<span class="op">=</span><span class="dv">0</span>, vmax<span class="op">=</span><span class="dv">100</span>)</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Setting plot properties. You should ignore everything from here on.</span></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>    xticks <span class="op">=</span> np.array([<span class="op">-</span><span class="fl">0.5</span>, <span class="dv">0</span>, <span class="dv">1</span>,<span class="fl">1.5</span>])</span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>    plt.gca().set_xticks(xticks)</span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>    plt.gca().set_yticks(xticks)</span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>    plt.gca().set_xticklabels([<span class="st">""</span>, <span class="st">"Healthy</span><span class="ch">\n</span><span class="st">Recall="</span> <span class="op">+</span> <span class="bu">str</span>(recallNegative) , <span class="st">"Pneumonia</span><span class="ch">\n</span><span class="st">Recall="</span> <span class="op">+</span> <span class="bu">str</span>(recallPositive), <span class="st">""</span>], fontsize<span class="op">=</span>PLOT_FONT_SIZE)</span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>    plt.gca().set_yticklabels([<span class="st">""</span>, <span class="st">"Healthy</span><span class="ch">\n</span><span class="st">Precision="</span> <span class="op">+</span> <span class="bu">str</span>(precisionNegative) , <span class="st">"Pneumonia</span><span class="ch">\n</span><span class="st">Precision="</span> <span class="op">+</span> <span class="bu">str</span>(precisionPositive), <span class="st">""</span>], fontsize<span class="op">=</span>PLOT_FONT_SIZE)</span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>    plt.ylabel(<span class="st">"Predicted Class"</span>, fontsize<span class="op">=</span>PLOT_FONT_SIZE)</span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>    plt.xlabel(<span class="st">"Actual Class"</span>, fontsize<span class="op">=</span>PLOT_FONT_SIZE)</span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>    plt.title(title, fontsize<span class="op">=</span>PLOT_FONT_SIZE)</span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Add text in heatmap boxes</span></span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">2</span>):</span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> j <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">2</span>):</span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a>            text <span class="op">=</span> plt.text(j, i, confusionMatrix[i][j], ha<span class="op">=</span><span class="st">"center"</span>, va<span class="op">=</span><span class="st">"center"</span>, color<span class="op">=</span><span class="st">"white"</span>, size<span class="op">=</span><span class="dv">15</span>) <span class="co">### size here is the size of text inside a single box in the heatmap</span></span>
+<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a>            </span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a>    plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-7" class="cell" data-cell_id="a27b21998a164aa593ff5e5603719336" data-deepnote_cell_type="code" data-deepnote_to_be_reexecuted="false" data-execution_millis="2" data-execution_start="1673120431490" data-source_hash="1e07d900" data-tags="[]" data-execution_count="5">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> calculateMetrics(predictions, predictionsProbabilities, actualLabels):</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Convert label format from [0,1](label 1) and [1,0](label 0) into single integers: 1 and 0.</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    actualLabels <span class="op">=</span> [item[<span class="dv">1</span>] <span class="cf">for</span> item <span class="kw">in</span> actualLabels]</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Get probabilities for the class with label 1. That is all we need to compute AUCs. We don't need probabilities for class 0.</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>    predictionsProbabilities <span class="op">=</span> [item[<span class="dv">1</span>] <span class="cf">for</span> item <span class="kw">in</span> predictionsProbabilities]</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Calculate metrics using scikit-learn functions. The round function is used to round the numbers up to 2 decimal points.</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">try</span>:</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>        accuracy <span class="op">=</span> <span class="bu">round</span>(accuracy_score(actualLabels, predictions) <span class="op">*</span> <span class="dv">100</span>, <span class="dv">2</span>)</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>        precisionNegative <span class="op">=</span> <span class="bu">round</span>(precision_score(actualLabels, predictions, average <span class="op">=</span> <span class="va">None</span>)[<span class="dv">0</span>] <span class="op">*</span> <span class="dv">100</span>, <span class="dv">2</span>)</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>        precisionPositive <span class="op">=</span> <span class="bu">round</span>(precision_score(actualLabels, predictions, average <span class="op">=</span> <span class="va">None</span>)[<span class="dv">1</span>] <span class="op">*</span> <span class="dv">100</span>, <span class="dv">2</span>)</span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>        recallNegative <span class="op">=</span> <span class="bu">round</span>(recall_score(actualLabels, predictions, average <span class="op">=</span> <span class="va">None</span>)[<span class="dv">0</span>] <span class="op">*</span> <span class="dv">100</span>, <span class="dv">2</span>)</span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>        recallPositive <span class="op">=</span> <span class="bu">round</span>(recall_score(actualLabels, predictions, average <span class="op">=</span> <span class="va">None</span>)[<span class="dv">1</span>] <span class="op">*</span> <span class="dv">100</span>, <span class="dv">2</span>)</span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">except</span>:</span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="st">"An exception occurred but was caught."</span>)</span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>    auc <span class="op">=</span> <span class="bu">round</span>(roc_auc_score(actualLabels, predictionsProbabilities) <span class="op">*</span> <span class="dv">100</span>, <span class="dv">2</span>)</span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> auc</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="metrics-calculation" class="level2">
+<h2 class="anchored" data-anchor-id="metrics-calculation">1.2 Metrics Calculation</h2>
+<p>We are giving you a function that will calculate all the metrics you’ll need in order to analyze your model</p>
+<div id="cell-9" class="cell" data-cell_id="69d780fb5e3e48aa9aa799de3315dcda" data-deepnote_cell_type="code" data-deepnote_to_be_reexecuted="false" data-execution_millis="1" data-execution_start="1673120431498" data-source_hash="656e6053" data-execution_count="6">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> calculateMetricsAndPrint(predictions, predictionsProbabilities, actualLabels):</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Convert label format from [0,1](label 1) and [1,0](label 0) into single integers: 1 and 0.</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    actualLabels <span class="op">=</span> [item[<span class="dv">1</span>] <span class="cf">for</span> item <span class="kw">in</span> actualLabels]</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Get probabilities for the class with label 1. That is all we need to compute AUCs. We don't need probabilities for class 0.</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>    predictionsProbabilities <span class="op">=</span> [item[<span class="dv">1</span>] <span class="cf">for</span> item <span class="kw">in</span> predictionsProbabilities]</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Calculate metrics using scikit-learn functions. The round function is used to round the numbers up to 2 decimal points.</span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>    accuracy <span class="op">=</span> <span class="bu">round</span>(accuracy_score(actualLabels, predictions) <span class="op">*</span> <span class="dv">100</span>, <span class="dv">2</span>)</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>    precisionNegative <span class="op">=</span> <span class="bu">round</span>(precision_score(actualLabels, predictions, average <span class="op">=</span> <span class="va">None</span>)[<span class="dv">0</span>] <span class="op">*</span> <span class="dv">100</span>, <span class="dv">2</span>)</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>    precisionPositive <span class="op">=</span> <span class="bu">round</span>(precision_score(actualLabels, predictions, average <span class="op">=</span> <span class="va">None</span>)[<span class="dv">1</span>] <span class="op">*</span> <span class="dv">100</span>, <span class="dv">2</span>)</span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>    recallNegative <span class="op">=</span> <span class="bu">round</span>(recall_score(actualLabels, predictions, average <span class="op">=</span> <span class="va">None</span>)[<span class="dv">0</span>] <span class="op">*</span> <span class="dv">100</span>, <span class="dv">2</span>)</span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>    recallPositive <span class="op">=</span> <span class="bu">round</span>(recall_score(actualLabels, predictions, average <span class="op">=</span> <span class="va">None</span>)[<span class="dv">1</span>] <span class="op">*</span> <span class="dv">100</span>, <span class="dv">2</span>)</span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>    auc <span class="op">=</span> <span class="bu">round</span>(roc_auc_score(actualLabels, predictionsProbabilities) <span class="op">*</span> <span class="dv">100</span>, <span class="dv">2</span>)</span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>    confusionMatrix <span class="op">=</span> confusion_matrix(actualLabels, predictions)</span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Print metrics. .%2f prints a number upto 2 decimal points only.</span></span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"------------------------------------------------------------------------"</span>)</span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"Accuracy: </span><span class="sc">%.2f</span><span class="ch">\n</span><span class="st">PrecisionNegative: </span><span class="sc">%.2f</span><span class="ch">\n</span><span class="st">PrecisionPositive: </span><span class="sc">%.2f</span><span class="ch">\n</span><span class="st">RecallNegative: </span><span class="sc">%.2f</span><span class="ch">\n</span><span class="st">RecallPositive: </span><span class="sc">%.2f</span><span class="ch">\n</span><span class="st">AUC Score: </span><span class="sc">%.2f</span><span class="st">"</span> <span class="op">%</span> </span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a>          (accuracy, precisionNegative, precisionPositive, recallNegative, recallPositive, auc))</span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"------------------------------------------------------------------------"</span>)</span>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"+ Printing confusion matrix...</span><span class="ch">\n</span><span class="st">"</span>)</span>
+<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Display confusion matrix</span></span>
+<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a>    displayConfusionMatrix(confusionMatrix, precisionNegative, precisionPositive, recallNegative, recallPositive, <span class="st">"Confusion Matrix"</span>)</span>
+<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"+ Printing ROC curve...</span><span class="ch">\n</span><span class="st">"</span>)</span>
+<span id="cb10-28"><a href="#cb10-28" aria-hidden="true" tabindex="-1"></a>    <span class="co"># ROC Curve</span></span>
+<span id="cb10-29"><a href="#cb10-29" aria-hidden="true" tabindex="-1"></a>    plt.rcParams[<span class="st">'figure.figsize'</span>] <span class="op">=</span> [<span class="dv">16</span>, <span class="dv">8</span>]</span>
+<span id="cb10-30"><a href="#cb10-30" aria-hidden="true" tabindex="-1"></a>    FONT_SIZE <span class="op">=</span> <span class="dv">16</span></span>
+<span id="cb10-31"><a href="#cb10-31" aria-hidden="true" tabindex="-1"></a>    falsePositiveRateDt, truePositiveRateDt, _ <span class="op">=</span> roc_curve(actualLabels, predictionsProbabilities)</span>
+<span id="cb10-32"><a href="#cb10-32" aria-hidden="true" tabindex="-1"></a>    plt.plot(falsePositiveRateDt, truePositiveRateDt, linewidth <span class="op">=</span> <span class="dv">5</span>, color<span class="op">=</span><span class="st">'black'</span>)</span>
+<span id="cb10-33"><a href="#cb10-33" aria-hidden="true" tabindex="-1"></a>    plt.xticks(fontsize<span class="op">=</span>FONT_SIZE)</span>
+<span id="cb10-34"><a href="#cb10-34" aria-hidden="true" tabindex="-1"></a>    plt.yticks(fontsize<span class="op">=</span>FONT_SIZE)</span>
+<span id="cb10-35"><a href="#cb10-35" aria-hidden="true" tabindex="-1"></a>    plt.xlabel(<span class="st">"False Positive Rate"</span>, fontsize<span class="op">=</span>FONT_SIZE)</span>
+<span id="cb10-36"><a href="#cb10-36" aria-hidden="true" tabindex="-1"></a>    plt.ylabel(<span class="st">"True Positive Rate"</span>, fontsize<span class="op">=</span>FONT_SIZE)</span>
+<span id="cb10-37"><a href="#cb10-37" aria-hidden="true" tabindex="-1"></a>    plt.show()</span>
+<span id="cb10-38"><a href="#cb10-38" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb10-39"><a href="#cb10-39" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> auc</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="kaggle-predictions" class="level2">
+<h2 class="anchored" data-anchor-id="kaggle-predictions">1.3 Kaggle Predictions</h2>
+<div id="cell-11" class="cell" data-cell_id="cb75c669fb6e498d8215eb38818f8ec7" data-deepnote_cell_type="code" data-deepnote_to_be_reexecuted="false" data-execution_millis="1" data-execution_start="1673120431505" data-source_hash="96bc1348" data-execution_count="7">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> getKagglePredictions(model, kaggleData, filename):</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"+ Writing kaggle test results in : results/</span><span class="sc">%s</span><span class="st">..."</span> <span class="op">%</span> filename)</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>    predictions <span class="op">=</span> model.predict(kaggleData)</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>    predictionProbs <span class="op">=</span> [item[<span class="dv">1</span>] <span class="cf">for</span> item <span class="kw">in</span> predictions]</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Store predictions for kaggle</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>    outputFile <span class="op">=</span> <span class="bu">open</span>(<span class="st">"results/"</span> <span class="op">+</span> <span class="bu">str</span>(filename), <span class="st">"w"</span>)</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>    outputFile.write(<span class="st">"Id,Prediction</span><span class="ch">\n</span><span class="st">"</span>)</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">0</span>, <span class="bu">len</span>(predictionProbs)):</span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>        outputFile.write(<span class="bu">str</span>(i <span class="op">+</span> <span class="dv">1</span>) <span class="op">+</span> <span class="st">","</span> <span class="op">+</span> <span class="bu">str</span>(predictionProbs[i]) <span class="op">+</span> <span class="st">"</span><span class="ch">\n</span><span class="st">"</span>)</span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>    outputFile.close()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="top-n-accuracy" class="level2">
+<h2 class="anchored" data-anchor-id="top-n-accuracy">1.4 Top n% accuracy</h2>
+<div id="cell-13" class="cell" data-cell_id="7cd0d10961d74c358f8673e0425eab97" data-deepnote_cell_type="code" data-deepnote_to_be_reexecuted="false" data-execution_millis="0" data-execution_start="1673120431527" data-owner_user_id="17a5c176-c9f5-46e9-af17-ab5b0f1b5ce8" data-source_hash="8ea36c0f" data-execution_count="8">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> calculateClasswiseTopNAccuracy(actualLabels, predictionsProbs, TOP_N):</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="co">    TOP_N is the top n% predictions you want to use for each class</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>    discreteActualLabels <span class="op">=</span> [<span class="dv">1</span> <span class="cf">if</span> item[<span class="dv">1</span>] <span class="op">&gt;</span> item[<span class="dv">0</span>] <span class="cf">else</span> <span class="dv">0</span> <span class="cf">for</span> item <span class="kw">in</span> actualLabels]</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>    discretePredictions <span class="op">=</span> [<span class="dv">1</span> <span class="cf">if</span> item[<span class="dv">1</span>] <span class="op">&gt;</span> item[<span class="dv">0</span>] <span class="cf">else</span> <span class="dv">0</span> <span class="cf">for</span> item <span class="kw">in</span> predictionsProbs]</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>    predictionProbsTopNHealthy, predictionProbsTopNPneumonia <span class="op">=</span> [item[<span class="dv">0</span>] <span class="cf">for</span> item <span class="kw">in</span> predictionsProbs], [item[<span class="dv">1</span>] <span class="cf">for</span> item <span class="kw">in</span> predictionsProbs]</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>    predictionProbsTopNHealthy <span class="op">=</span> <span class="bu">list</span>(<span class="bu">reversed</span>(<span class="bu">sorted</span>(predictionProbsTopNHealthy)))[:<span class="bu">int</span>(<span class="bu">len</span>(predictionProbsTopNHealthy) <span class="op">*</span> TOP_N <span class="op">/</span> <span class="dv">100</span>)][<span class="op">-</span><span class="dv">1</span>]</span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>    predictionProbsTopNPneumonia <span class="op">=</span> <span class="bu">list</span>(<span class="bu">reversed</span>(<span class="bu">sorted</span>(predictionProbsTopNPneumonia)))[:<span class="bu">int</span>(<span class="bu">len</span>(predictionProbsTopNPneumonia) <span class="op">*</span> TOP_N <span class="op">/</span> <span class="dv">100</span>)][<span class="op">-</span><span class="dv">1</span>]</span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Calculate accuracy for both classes</span></span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>    accuracyHealthy <span class="op">=</span> []</span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>    accuracyPneumonia <span class="op">=</span> []</span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">0</span>, <span class="bu">len</span>(discretePredictions)):</span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> discretePredictions[i] <span class="op">==</span> <span class="dv">1</span>:</span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Pneumonia</span></span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> predictionsProbs[i][<span class="dv">1</span>] <span class="op">&gt;</span> predictionProbsTopNPneumonia:</span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a>                accuracyPneumonia.append(<span class="bu">int</span>(discreteActualLabels[i]) <span class="op">==</span> <span class="dv">1</span>)</span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a>        <span class="cf">else</span>:</span>
+<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Healthy</span></span>
+<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> predictionsProbs[i][<span class="dv">0</span>] <span class="op">&gt;</span> predictionProbsTopNHealthy:</span>
+<span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a>                accuracyHealthy.append(<span class="bu">int</span>(discreteActualLabels[i]) <span class="op">==</span> <span class="dv">0</span>)</span>
+<span id="cb12-24"><a href="#cb12-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-25"><a href="#cb12-25" aria-hidden="true" tabindex="-1"></a>    accuracyHealthy <span class="op">=</span> <span class="bu">round</span>((accuracyHealthy.count(<span class="va">True</span>) <span class="op">*</span> <span class="dv">100</span>) <span class="op">/</span> <span class="bu">len</span>(accuracyHealthy), <span class="dv">2</span>)</span>
+<span id="cb12-26"><a href="#cb12-26" aria-hidden="true" tabindex="-1"></a>    accuracyPneumonia <span class="op">=</span> <span class="bu">round</span>((accuracyPneumonia.count(<span class="va">True</span>) <span class="op">*</span> <span class="dv">100</span>) <span class="op">/</span> <span class="bu">len</span>(accuracyPneumonia), <span class="dv">2</span>)</span>
+<span id="cb12-27"><a href="#cb12-27" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> accuracyHealthy, accuracyPneumonia</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+</section>
+<section id="data-loading" class="level1">
+<h1>2. Data Loading</h1>
+<section id="loading-file-paths" class="level2">
+<h2 class="anchored" data-anchor-id="loading-file-paths">2.1 Loading File Paths</h2>
+<p>We will first load file paths from normal and pneumonia folders in the train directory.</p>
+<div id="cell-15" class="cell" data-cell_id="35ea1d34534a4edeacf3b4577dab5e92" data-deepnote_cell_type="code" data-deepnote_to_be_reexecuted="false" data-execution_millis="2" data-execution_start="1673120431527" data-source_hash="932cd718" data-execution_count="9">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load normal images</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>normalImagesPath <span class="op">=</span> <span class="st">"data/train/normal"</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>normalImageFiles <span class="op">=</span> []</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span>(_,_,files) <span class="kw">in</span> walk(normalImagesPath):</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>    normalImageFiles.extend(files)</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>normalImagesPath2 <span class="op">=</span> <span class="st">"data/train/normal2"</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span>(_,_,files) <span class="kw">in</span> walk(normalImagesPath2):</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>    normalImageFiles.extend(files)</span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="bu">len</span>(normalImageFiles))</span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Load pneumonia images</span></span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a>pneumoniaImagesPath <span class="op">=</span> <span class="st">"data/train/pneumonia"</span></span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a>pneumoniaImageFiles <span class="op">=</span> []</span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span>(_,_,files) <span class="kw">in</span> walk(pneumoniaImagesPath):</span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a>    pneumoniaImageFiles.extend(files)</span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a>random.shuffle(pneumoniaImageFiles)</span>
+<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a>pneumoniaImageFiles <span class="op">=</span> pneumoniaImageFiles[:<span class="bu">len</span>(normalImageFiles)]</span>
+<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Normal X-ray images: </span><span class="sc">%d</span><span class="ch">\n</span><span class="st">Pneumonia X-ray images: </span><span class="sc">%d</span><span class="st">"</span> <span class="op">%</span> (<span class="bu">len</span>(normalImageFiles), <span class="bu">len</span>(pneumoniaImageFiles)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>1436
+Normal X-ray images: 1436
+Pneumonia X-ray images: 1436</code></pre>
+</div>
+</div>
+</section>
+<section id="loading-image-data" class="level2">
+<h2 class="anchored" data-anchor-id="loading-image-data">2.2 Loading Image Data</h2>
+<section id="training-and-validation" class="level3">
+<h3 class="anchored" data-anchor-id="training-and-validation">2.2.1 Training and Validation</h3>
+<div id="cell-17" class="cell" data-cell_id="55fecbf7574743ddb76811f790ca9274" data-deepnote_cell_type="code" data-deepnote_to_be_reexecuted="false" data-execution_millis="6859" data-execution_start="1673120431528" data-source_hash="cc7c3793" data-execution_count="10">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>imagesData <span class="op">=</span> []</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>imagesLabels <span class="op">=</span> []</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> <span class="bu">file</span> <span class="kw">in</span> normalImageFiles:</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>    fullPath <span class="op">=</span> normalImagesPath <span class="op">+</span> <span class="st">"/"</span> <span class="op">+</span> <span class="bu">file</span></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> os.path.exists(fullPath) <span class="op">==</span> <span class="va">False</span>:</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>        fullPath <span class="op">=</span> normalImagesPath2 <span class="op">+</span> <span class="st">"/"</span> <span class="op">+</span> <span class="bu">file</span></span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> os.path.exists(fullPath) <span class="op">==</span> <span class="va">False</span>:</span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>            <span class="cf">continue</span></span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>    imageData <span class="op">=</span> load_img(fullPath, color_mode <span class="op">=</span> <span class="st">"grayscale"</span>) <span class="co"># load_img function comes from keras library when we do "from keras.preprocessing.image import *"</span></span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>    imageArray <span class="op">=</span> img_to_array(imageData) <span class="op">/</span> <span class="fl">255.0</span></span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>    imagesData.append(imageArray)</span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>    imagesLabels.append(<span class="dv">0</span>)</span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> <span class="bu">file</span> <span class="kw">in</span> pneumoniaImageFiles:</span>
+<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a>    fullPath <span class="op">=</span> pneumoniaImagesPath <span class="op">+</span> <span class="st">"/"</span> <span class="op">+</span> <span class="bu">file</span></span>
+<span id="cb15-19"><a href="#cb15-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> os.path.exists(fullPath) <span class="op">==</span> <span class="va">False</span>:</span>
+<span id="cb15-20"><a href="#cb15-20" aria-hidden="true" tabindex="-1"></a>            <span class="cf">continue</span></span>
+<span id="cb15-21"><a href="#cb15-21" aria-hidden="true" tabindex="-1"></a>            </span>
+<span id="cb15-22"><a href="#cb15-22" aria-hidden="true" tabindex="-1"></a>    imageData <span class="op">=</span> load_img(pneumoniaImagesPath <span class="op">+</span> <span class="st">"/"</span> <span class="op">+</span> <span class="bu">file</span>, color_mode <span class="op">=</span> <span class="st">"grayscale"</span>) <span class="co"># load_img function comes from keras library when we do "from keras.preprocessing.image import *"</span></span>
+<span id="cb15-23"><a href="#cb15-23" aria-hidden="true" tabindex="-1"></a>    imageArray <span class="op">=</span> img_to_array(imageData) <span class="op">/</span> <span class="fl">255.0</span></span>
+<span id="cb15-24"><a href="#cb15-24" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb15-25"><a href="#cb15-25" aria-hidden="true" tabindex="-1"></a>    imagesData.append(imageArray)</span>
+<span id="cb15-26"><a href="#cb15-26" aria-hidden="true" tabindex="-1"></a>    imagesLabels.append(<span class="dv">1</span>)</span>
+<span id="cb15-27"><a href="#cb15-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-28"><a href="#cb15-28" aria-hidden="true" tabindex="-1"></a>imagesData <span class="op">=</span> np.array(imagesData)</span>
+<span id="cb15-29"><a href="#cb15-29" aria-hidden="true" tabindex="-1"></a>imagesLabels <span class="op">=</span> keras.utils.to_categorical(imagesLabels)</span>
+<span id="cb15-30"><a href="#cb15-30" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Input data shape: </span><span class="sc">%s</span><span class="st">"</span> <span class="op">%</span> (imagesData.shape,))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Input data shape: (2872, 256, 256, 1)</code></pre>
+</div>
+</div>
+<div id="cell-18" class="cell" data-execution_count="11">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co">"""</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="co">from zipfile import ZipFile</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="co">file_name = "data/test.zip"</span></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a><span class="co"># opening the zip file in READ mode </span></span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a><span class="co">with ZipFile(file_name, 'r') as zip: </span></span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a><span class="co">    # printing all the contents of the zip file </span></span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a><span class="co">    zip.printdir() </span></span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a><span class="co">  </span></span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a><span class="co">    # extracting all the files </span></span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a><span class="co">    print('Extracting all the files now...') </span></span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a><span class="co">    zip.extractall("data/") </span></span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a><span class="co">    print('Done!')</span></span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a><span class="co">"""</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="11">
+<pre><code>'\nfrom zipfile import ZipFile\nfile_name = "data/test.zip"\n\n# opening the zip file in READ mode \nwith ZipFile(file_name, \'r\') as zip: \n    # printing all the contents of the zip file \n    zip.printdir() \n  \n    # extracting all the files \n    print(\'Extracting all the files now...\') \n    zip.extractall("data/") \n    print(\'Done!\')\n'</code></pre>
+</div>
+</div>
+</section>
+<section id="kaggle-testing-data" class="level3">
+<h3 class="anchored" data-anchor-id="kaggle-testing-data">2.2.2 Kaggle Testing Data</h3>
+<div id="cell-20" class="cell" data-cell_id="7326dea8d8cd40ac87874e3511567cd4" data-deepnote_cell_type="code" data-deepnote_to_be_reexecuted="false" data-execution_millis="592" data-execution_start="1673120438389" data-source_hash="e28f1a93" data-execution_count="12">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>testImagesPath <span class="op">=</span> <span class="st">"data/test/"</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>testImageFiles <span class="op">=</span> []</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span>(_,_,files) <span class="kw">in</span> walk(testImagesPath):</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>    testImageFiles.extend(files)</span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>testImageFiles <span class="op">=</span> <span class="bu">list</span>(<span class="bu">sorted</span>(testImageFiles))</span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>kaggleTestImages <span class="op">=</span> []</span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> <span class="bu">file</span> <span class="kw">in</span> testImageFiles:</span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>    fullPath <span class="op">=</span> testImagesPath <span class="op">+</span> <span class="st">"/"</span> <span class="op">+</span> <span class="bu">file</span></span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> os.path.exists(fullPath) <span class="op">==</span> <span class="va">False</span>:</span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a>        <span class="cf">continue</span></span>
+<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a>    imageData <span class="op">=</span> load_img(testImagesPath <span class="op">+</span> <span class="st">"/"</span> <span class="op">+</span> <span class="bu">file</span>, color_mode <span class="op">=</span> <span class="st">"grayscale"</span>) <span class="co"># load_img function comes from keras library when we do "from keras.preprocessing.image import *"</span></span>
+<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a>    imageArray <span class="op">=</span> img_to_array(imageData) <span class="op">/</span> <span class="fl">255.0</span></span>
+<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb19-15"><a href="#cb19-15" aria-hidden="true" tabindex="-1"></a>    kaggleTestImages.append(imageArray)</span>
+<span id="cb19-16"><a href="#cb19-16" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb19-17"><a href="#cb19-17" aria-hidden="true" tabindex="-1"></a>kaggleTestImages <span class="op">=</span> np.array(kaggleTestImages)</span>
+<span id="cb19-18"><a href="#cb19-18" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Number of test images: </span><span class="sc">%d</span><span class="st">"</span> <span class="op">%</span> <span class="bu">len</span>(kaggleTestImages))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Number of test images: 200</code></pre>
+</div>
+</div>
+</section>
+</section>
+<section id="data-splitting-into-training-and-validation" class="level2">
+<h2 class="anchored" data-anchor-id="data-splitting-into-training-and-validation">2.3 Data Splitting into Training and Validation</h2>
+<div id="cell-22" class="cell" data-cell_id="5102bbf73ec74aa396dae6c18c96e9c2" data-deepnote_cell_type="code" data-deepnote_to_be_reexecuted="false" data-execution_millis="0" data-execution_start="1673120439026" data-source_hash="1a7dcdf7" data-execution_count="13">
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> trainTestSplit(data, labels):</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a><span class="co">    80-20 train-test data split</span></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>    trainData, trainLabels, testData, testLabels <span class="op">=</span> [], [], [], []</span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">0</span>, <span class="bu">len</span>(data)):</span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> i <span class="op">%</span> <span class="dv">5</span> <span class="op">==</span> <span class="dv">0</span>:</span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>            testData.append(data[i])</span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>            testLabels.append(labels[i])</span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>        <span class="cf">else</span>:</span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a>            trainData.append(data[i])</span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a>            trainLabels.append(labels[i])</span>
+<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a>            </span>
+<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> np.array(trainData), np.array(testData), np.array(trainLabels), np.array(testLabels)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-23" class="cell" data-cell_id="ebe164d853964bf580f5bb76c53cc470" data-deepnote_cell_type="code" data-deepnote_to_be_reexecuted="false" data-execution_millis="98" data-execution_start="1673120439026" data-source_hash="a389ed2a" data-execution_count="14">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co"># In our context, since we have a private test data on kaggle, our test data here would actually mean validation data. We will use results on this validation(test) data to see how our model would perform on the actual test data.</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Split data into 80% training and 20% testing</span></span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>trainData, testData, trainLabels, testLabels <span class="op">=</span> trainTestSplit(imagesData, imagesLabels)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+</section>
+<section id="deep-learning-models" class="level1">
+<h1>3. Deep Learning Models</h1>
+<p>We will use keras to create deep learning models. Since we are dealing with images, we will use convolutional layers. For more details, please visit: https://keras.io/layers/convolutional/</p>
+<section id="parameterized-convolutional-neural-networks" class="level2">
+<h2 class="anchored" data-anchor-id="parameterized-convolutional-neural-networks">3.1 Parameterized Convolutional Neural Networks</h2>
+<p>We will first provide you with a simple function that takes in a few parameters and create a convolutional neural network model for you. This is the easiest way to create a CNN model.</p>
+<div id="cell-25" class="cell" data-cell_id="44ec4cc4465e4e05b4cd8fa14ea13c31" data-deepnote_cell_type="code" data-deepnote_to_be_reexecuted="false" data-execution_millis="1" data-execution_start="1673120439140" data-source_hash="5c0a232b" data-execution_count="15">
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> keras.metrics <span class="im">import</span> AUC</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> createParameterizedConvolutionalNeuralNetwork(trainImages, numLayers, numFilters, kernelSize, maxPooling, dropoutValue, learningRate, numClasses):</span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Create model object</span></span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>    model <span class="op">=</span> Sequential()</span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Add the first layer with dropout</span></span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>    model.add(Conv2D(numFilters, kernel_size<span class="op">=</span>(kernelSize, kernelSize),</span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>                     activation<span class="op">=</span><span class="st">'relu'</span>, padding<span class="op">=</span><span class="st">'same'</span>,</span>
+<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a>                     input_shape<span class="op">=</span>trainImages.shape[<span class="dv">1</span>:]))</span>
+<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a>    model.add(MaxPooling2D(pool_size<span class="op">=</span>(maxPooling, maxPooling)))</span>
+<span id="cb23-12"><a href="#cb23-12" aria-hidden="true" tabindex="-1"></a>    model.add(Dropout(dropoutValue))</span>
+<span id="cb23-13"><a href="#cb23-13" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb23-14"><a href="#cb23-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">while</span> numLayers <span class="op">&gt;</span> <span class="dv">1</span>:</span>
+<span id="cb23-15"><a href="#cb23-15" aria-hidden="true" tabindex="-1"></a>        model.add(Conv2D(numFilters, kernel_size<span class="op">=</span>(kernelSize, kernelSize),</span>
+<span id="cb23-16"><a href="#cb23-16" aria-hidden="true" tabindex="-1"></a>                         activation<span class="op">=</span><span class="st">'relu'</span>, padding<span class="op">=</span><span class="st">'same'</span>))</span>
+<span id="cb23-17"><a href="#cb23-17" aria-hidden="true" tabindex="-1"></a>        model.add(MaxPooling2D(pool_size<span class="op">=</span>(maxPooling, maxPooling)))</span>
+<span id="cb23-18"><a href="#cb23-18" aria-hidden="true" tabindex="-1"></a>        model.add(Dropout(dropoutValue))</span>
+<span id="cb23-19"><a href="#cb23-19" aria-hidden="true" tabindex="-1"></a>        numLayers <span class="op">-=</span> <span class="dv">1</span></span>
+<span id="cb23-20"><a href="#cb23-20" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb23-21"><a href="#cb23-21" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Flatten and Dense Layers</span></span>
+<span id="cb23-22"><a href="#cb23-22" aria-hidden="true" tabindex="-1"></a>    model.add(Flatten())</span>
+<span id="cb23-23"><a href="#cb23-23" aria-hidden="true" tabindex="-1"></a>    model.add(Dense(<span class="dv">64</span>, activation<span class="op">=</span><span class="st">'relu'</span>))</span>
+<span id="cb23-24"><a href="#cb23-24" aria-hidden="true" tabindex="-1"></a>    model.add(Dropout(dropoutValue))</span>
+<span id="cb23-25"><a href="#cb23-25" aria-hidden="true" tabindex="-1"></a>    model.add(Dense(numClasses, activation<span class="op">=</span><span class="st">'softmax'</span>))</span>
+<span id="cb23-26"><a href="#cb23-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-27"><a href="#cb23-27" aria-hidden="true" tabindex="-1"></a>    <span class="co"># ✅ Compile model with AUC metric</span></span>
+<span id="cb23-28"><a href="#cb23-28" aria-hidden="true" tabindex="-1"></a>    model.<span class="bu">compile</span>(loss<span class="op">=</span>keras.losses.categorical_crossentropy,</span>
+<span id="cb23-29"><a href="#cb23-29" aria-hidden="true" tabindex="-1"></a>                  optimizer<span class="op">=</span>keras.optimizers.Adam(learning_rate<span class="op">=</span>learningRate),</span>
+<span id="cb23-30"><a href="#cb23-30" aria-hidden="true" tabindex="-1"></a>                  metrics<span class="op">=</span>[<span class="st">'accuracy'</span>, AUC(name<span class="op">=</span><span class="st">'auc'</span>)])</span>
+<span id="cb23-31"><a href="#cb23-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-32"><a href="#cb23-32" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> model</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="more-nuanced-convolutional-neural-networks" class="level2">
+<h2 class="anchored" data-anchor-id="more-nuanced-convolutional-neural-networks">3.2 More Nuanced Convolutional Neural Networks</h2>
+<p>In this section, we provide you with a function where you can edit tiny details of the model to see if it can give you a greater lift as compared to the parameterized model.</p>
+<div id="cell-27" class="cell" data-cell_id="a0e3c77fb9fb43ab9b2e2722e257fad2" data-deepnote_cell_type="code" data-deepnote_to_be_reexecuted="false" data-execution_millis="0" data-execution_start="1673120439141" data-source_hash="1dc053fa" data-execution_count="16">
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> keras.layers <span class="im">import</span> BatchNormalization</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> createNuancedConvolutionalNeuralNetwork(trainImages, numClasses):</span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>    model <span class="op">=</span> Sequential()</span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>    <span class="co"># First Conv Block</span></span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>    model.add(Conv2D(<span class="dv">64</span>, (<span class="dv">5</span>, <span class="dv">5</span>), activation<span class="op">=</span><span class="st">'relu'</span>, padding<span class="op">=</span><span class="st">'same'</span>, input_shape<span class="op">=</span>trainImages.shape[<span class="dv">1</span>:]))</span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>    model.add(BatchNormalization())</span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>    model.add(MaxPooling2D(pool_size<span class="op">=</span>(<span class="dv">3</span>, <span class="dv">3</span>)))</span>
+<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a>    model.add(Dropout(<span class="fl">0.5</span>))</span>
+<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-12"><a href="#cb24-12" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Second Conv Block</span></span>
+<span id="cb24-13"><a href="#cb24-13" aria-hidden="true" tabindex="-1"></a>    model.add(Conv2D(<span class="dv">32</span>, (<span class="dv">3</span>, <span class="dv">3</span>), activation<span class="op">=</span><span class="st">'relu'</span>, padding<span class="op">=</span><span class="st">'same'</span>))</span>
+<span id="cb24-14"><a href="#cb24-14" aria-hidden="true" tabindex="-1"></a>    model.add(BatchNormalization())</span>
+<span id="cb24-15"><a href="#cb24-15" aria-hidden="true" tabindex="-1"></a>    model.add(Dropout(<span class="fl">0.3</span>))</span>
+<span id="cb24-16"><a href="#cb24-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-17"><a href="#cb24-17" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Third Conv Block</span></span>
+<span id="cb24-18"><a href="#cb24-18" aria-hidden="true" tabindex="-1"></a>    model.add(Conv2D(<span class="dv">32</span>, (<span class="dv">3</span>, <span class="dv">3</span>), activation<span class="op">=</span><span class="st">'relu'</span>, padding<span class="op">=</span><span class="st">'same'</span>))</span>
+<span id="cb24-19"><a href="#cb24-19" aria-hidden="true" tabindex="-1"></a>    model.add(BatchNormalization())</span>
+<span id="cb24-20"><a href="#cb24-20" aria-hidden="true" tabindex="-1"></a>    model.add(Dropout(<span class="fl">0.3</span>))</span>
+<span id="cb24-21"><a href="#cb24-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-22"><a href="#cb24-22" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Dense Layers</span></span>
+<span id="cb24-23"><a href="#cb24-23" aria-hidden="true" tabindex="-1"></a>    model.add(Flatten())</span>
+<span id="cb24-24"><a href="#cb24-24" aria-hidden="true" tabindex="-1"></a>    model.add(Dense(<span class="dv">128</span>, activation<span class="op">=</span><span class="st">'relu'</span>))</span>
+<span id="cb24-25"><a href="#cb24-25" aria-hidden="true" tabindex="-1"></a>    model.add(Dropout(<span class="fl">0.5</span>))</span>
+<span id="cb24-26"><a href="#cb24-26" aria-hidden="true" tabindex="-1"></a>    model.add(Dense(numClasses, activation<span class="op">=</span><span class="st">'softmax'</span>))</span>
+<span id="cb24-27"><a href="#cb24-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-28"><a href="#cb24-28" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Compile with AUC Metric</span></span>
+<span id="cb24-29"><a href="#cb24-29" aria-hidden="true" tabindex="-1"></a>    model.<span class="bu">compile</span>(loss<span class="op">=</span><span class="st">'categorical_crossentropy'</span>,</span>
+<span id="cb24-30"><a href="#cb24-30" aria-hidden="true" tabindex="-1"></a>                  optimizer<span class="op">=</span>keras.optimizers.Adam(learning_rate<span class="op">=</span><span class="fl">0.0001</span>),</span>
+<span id="cb24-31"><a href="#cb24-31" aria-hidden="true" tabindex="-1"></a>                  metrics<span class="op">=</span>[<span class="st">'accuracy'</span>, tf.keras.metrics.AUC(name<span class="op">=</span><span class="st">'auc'</span>)])</span>
+<span id="cb24-32"><a href="#cb24-32" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb24-33"><a href="#cb24-33" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> model</span>
+<span id="cb24-34"><a href="#cb24-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-35"><a href="#cb24-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-36"><a href="#cb24-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-37"><a href="#cb24-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-38"><a href="#cb24-38" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> keras.regularizers <span class="im">import</span> l2</span>
+<span id="cb24-39"><a href="#cb24-39" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> keras.layers <span class="im">import</span> BatchNormalization</span>
+<span id="cb24-40"><a href="#cb24-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-41"><a href="#cb24-41" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> createOptimizedCNN(input_shape, num_classes):</span>
+<span id="cb24-42"><a href="#cb24-42" aria-hidden="true" tabindex="-1"></a>    model <span class="op">=</span> Sequential()</span>
+<span id="cb24-43"><a href="#cb24-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-44"><a href="#cb24-44" aria-hidden="true" tabindex="-1"></a>    <span class="co"># First Convolutional Block</span></span>
+<span id="cb24-45"><a href="#cb24-45" aria-hidden="true" tabindex="-1"></a>    model.add(Conv2D(<span class="dv">64</span>, (<span class="dv">5</span>, <span class="dv">5</span>), activation<span class="op">=</span><span class="st">'relu'</span>, padding<span class="op">=</span><span class="st">'same'</span>, kernel_regularizer<span class="op">=</span>l2(<span class="fl">0.001</span>), input_shape<span class="op">=</span>input_shape))</span>
+<span id="cb24-46"><a href="#cb24-46" aria-hidden="true" tabindex="-1"></a>    model.add(BatchNormalization())</span>
+<span id="cb24-47"><a href="#cb24-47" aria-hidden="true" tabindex="-1"></a>    model.add(MaxPooling2D(pool_size<span class="op">=</span>(<span class="dv">3</span>, <span class="dv">3</span>)))</span>
+<span id="cb24-48"><a href="#cb24-48" aria-hidden="true" tabindex="-1"></a>    model.add(Dropout(<span class="fl">0.5</span>))</span>
+<span id="cb24-49"><a href="#cb24-49" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-50"><a href="#cb24-50" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Second Convolutional Block</span></span>
+<span id="cb24-51"><a href="#cb24-51" aria-hidden="true" tabindex="-1"></a>    model.add(Conv2D(<span class="dv">128</span>, (<span class="dv">3</span>, <span class="dv">3</span>), activation<span class="op">=</span><span class="st">'relu'</span>, padding<span class="op">=</span><span class="st">'same'</span>, kernel_regularizer<span class="op">=</span>l2(<span class="fl">0.001</span>)))</span>
+<span id="cb24-52"><a href="#cb24-52" aria-hidden="true" tabindex="-1"></a>    model.add(BatchNormalization())</span>
+<span id="cb24-53"><a href="#cb24-53" aria-hidden="true" tabindex="-1"></a>    model.add(MaxPooling2D(pool_size<span class="op">=</span>(<span class="dv">2</span>, <span class="dv">2</span>)))</span>
+<span id="cb24-54"><a href="#cb24-54" aria-hidden="true" tabindex="-1"></a>    model.add(Dropout(<span class="fl">0.4</span>))</span>
+<span id="cb24-55"><a href="#cb24-55" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-56"><a href="#cb24-56" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Third Convolutional Block</span></span>
+<span id="cb24-57"><a href="#cb24-57" aria-hidden="true" tabindex="-1"></a>    model.add(Conv2D(<span class="dv">256</span>, (<span class="dv">3</span>, <span class="dv">3</span>), activation<span class="op">=</span><span class="st">'relu'</span>, padding<span class="op">=</span><span class="st">'same'</span>, kernel_regularizer<span class="op">=</span>l2(<span class="fl">0.001</span>)))</span>
+<span id="cb24-58"><a href="#cb24-58" aria-hidden="true" tabindex="-1"></a>    model.add(BatchNormalization())</span>
+<span id="cb24-59"><a href="#cb24-59" aria-hidden="true" tabindex="-1"></a>    model.add(Dropout(<span class="fl">0.4</span>))</span>
+<span id="cb24-60"><a href="#cb24-60" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-61"><a href="#cb24-61" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Flatten and Dense Layers</span></span>
+<span id="cb24-62"><a href="#cb24-62" aria-hidden="true" tabindex="-1"></a>    model.add(Flatten())</span>
+<span id="cb24-63"><a href="#cb24-63" aria-hidden="true" tabindex="-1"></a>    model.add(Dense(<span class="dv">512</span>, activation<span class="op">=</span><span class="st">'relu'</span>))</span>
+<span id="cb24-64"><a href="#cb24-64" aria-hidden="true" tabindex="-1"></a>    model.add(Dropout(<span class="fl">0.5</span>))</span>
+<span id="cb24-65"><a href="#cb24-65" aria-hidden="true" tabindex="-1"></a>    model.add(Dense(num_classes, activation<span class="op">=</span><span class="st">'softmax'</span>))</span>
+<span id="cb24-66"><a href="#cb24-66" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-67"><a href="#cb24-67" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Compile the model with AUC as a metric</span></span>
+<span id="cb24-68"><a href="#cb24-68" aria-hidden="true" tabindex="-1"></a>    model.<span class="bu">compile</span>(</span>
+<span id="cb24-69"><a href="#cb24-69" aria-hidden="true" tabindex="-1"></a>        optimizer<span class="op">=</span>keras.optimizers.Adam(learning_rate<span class="op">=</span><span class="fl">0.0001</span>),</span>
+<span id="cb24-70"><a href="#cb24-70" aria-hidden="true" tabindex="-1"></a>        loss<span class="op">=</span><span class="st">'categorical_crossentropy'</span>,</span>
+<span id="cb24-71"><a href="#cb24-71" aria-hidden="true" tabindex="-1"></a>        metrics<span class="op">=</span>[<span class="st">'accuracy'</span>, tf.keras.metrics.AUC(name<span class="op">=</span><span class="st">'auc'</span>)]</span>
+<span id="cb24-72"><a href="#cb24-72" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb24-73"><a href="#cb24-73" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-74"><a href="#cb24-74" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> model</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+</section>
+<section id="model-training" class="level1">
+<h1>4. Model Training</h1>
+<section id="data-augmentation" class="level2">
+<h2 class="anchored" data-anchor-id="data-augmentation">4.1 Data Augmentation</h2>
+<p>Deep learning models require huge amounts of data for good performance. Since we only have around 5k examples, we will use what’s called “Data Augmentation” to create more data. To read more on data augmentation, please visit: https://towardsdatascience.com/data-augmentation-for-deep-learning-4fe21d1a4eb9</p>
+<div id="cell-29" class="cell" data-cell_id="f0f025ef0d3e4a6f91a101fc1368051d" data-deepnote_cell_type="code" data-deepnote_to_be_reexecuted="false" data-execution_millis="3" data-execution_start="1673120439142" data-source_hash="3ac9de27" data-execution_count="17">
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>set_background(<span class="st">'#fce53a'</span>)</span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a><span class="co">#####################################################################################################################################################</span></span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Things you can change                                                                                                                             </span></span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a><span class="co">#####################################################################################################################################################</span></span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a><span class="co"># You can change all these parameters for different results. Please go to the following links to read more about each parameter: </span></span>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a><span class="co"># https://keras.io/preprocessing/image/</span></span>
+<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a><span class="co"># https://www.pyimagesearch.com/2019/07/08/keras-imagedatagenerator-and-data-augmentation/</span></span>
+<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a>dataAugmentation <span class="op">=</span> ImageDataGenerator(</span>
+<span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a>    rotation_range<span class="op">=</span><span class="dv">15</span>,        <span class="co"># Slightly more rotation</span></span>
+<span id="cb25-12"><a href="#cb25-12" aria-hidden="true" tabindex="-1"></a>    width_shift_range<span class="op">=</span><span class="fl">0.1</span>,</span>
+<span id="cb25-13"><a href="#cb25-13" aria-hidden="true" tabindex="-1"></a>    height_shift_range<span class="op">=</span><span class="fl">0.1</span>,</span>
+<span id="cb25-14"><a href="#cb25-14" aria-hidden="true" tabindex="-1"></a>    horizontal_flip<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb25-15"><a href="#cb25-15" aria-hidden="true" tabindex="-1"></a>    zoom_range<span class="op">=</span><span class="fl">0.2</span>,           <span class="co"># Slightly more aggressive zoom</span></span>
+<span id="cb25-16"><a href="#cb25-16" aria-hidden="true" tabindex="-1"></a>    shear_range<span class="op">=</span><span class="fl">0.15</span></span>
+<span id="cb25-17"><a href="#cb25-17" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<img src="" onerror="var cell = this.closest('.code_cell');var editor = cell.querySelector('.input_area');editor.style.background='#fce53a';this.parentNode.removeChild(this)">
+</div>
+</div>
+</section>
+<section id="model-parameters" class="level2">
+<h2 class="anchored" data-anchor-id="model-parameters">4.2 Model Parameters</h2>
+<div id="cell-31" class="cell" data-cell_id="dde1f5f79a6c48be80053186b2f9a362" data-deepnote_cell_type="code" data-deepnote_to_be_reexecuted="false" data-execution_millis="79" data-execution_start="1673120439189" data-source_hash="64bc72de" data-execution_count="18">
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>set_background(<span class="st">'#fce53a'</span>)</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a><span class="co">#####################################################################################################################################################</span></span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Things you can change                                                                                                                             </span></span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a><span class="co">#####################################################################################################################################################</span></span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a>numLayers <span class="op">=</span> <span class="dv">3</span>          <span class="co"># Number of convolutional layers</span></span>
+<span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a>numFilters <span class="op">=</span> <span class="dv">32</span>        <span class="co"># Number of filters for the first conv layer</span></span>
+<span id="cb26-10"><a href="#cb26-10" aria-hidden="true" tabindex="-1"></a>kernelSize <span class="op">=</span> <span class="dv">3</span>         <span class="co"># Size of the convolutional kernel</span></span>
+<span id="cb26-11"><a href="#cb26-11" aria-hidden="true" tabindex="-1"></a>maxPooling <span class="op">=</span> <span class="dv">2</span>         <span class="co"># Pooling window size</span></span>
+<span id="cb26-12"><a href="#cb26-12" aria-hidden="true" tabindex="-1"></a>dropoutValue <span class="op">=</span> <span class="fl">0.3</span>     <span class="co"># Dropout rate to prevent overfitting</span></span>
+<span id="cb26-13"><a href="#cb26-13" aria-hidden="true" tabindex="-1"></a>learningRate <span class="op">=</span> <span class="fl">0.0005</span>  <span class="co"># Initial learning rate</span></span>
+<span id="cb26-14"><a href="#cb26-14" aria-hidden="true" tabindex="-1"></a>numClasses <span class="op">=</span> <span class="dv">2</span>         <span class="co"># Binary classification (Healthy vs Pneumonia)</span></span>
+<span id="cb26-15"><a href="#cb26-15" aria-hidden="true" tabindex="-1"></a>batchSize <span class="op">=</span> <span class="dv">8</span>        <span class="co"># Number of images per batch</span></span>
+<span id="cb26-16"><a href="#cb26-16" aria-hidden="true" tabindex="-1"></a>epochs <span class="op">=</span> <span class="dv">30</span></span>
+<span id="cb26-17"><a href="#cb26-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-18"><a href="#cb26-18" aria-hidden="true" tabindex="-1"></a><span class="co">#####################################################################################################################################################</span></span>
+<span id="cb26-19"><a href="#cb26-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-20"><a href="#cb26-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-21"><a href="#cb26-21" aria-hidden="true" tabindex="-1"></a><span class="co"># Please do not change this line.</span></span>
+<span id="cb26-22"><a href="#cb26-22" aria-hidden="true" tabindex="-1"></a>dataAugmentation.fit(trainData) <span class="co"># Training the augmentor in case we set USE_DATA_AUGMENTATION to True.</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<img src="" onerror="var cell = this.closest('.code_cell');var editor = cell.querySelector('.input_area');editor.style.background='#fce53a';this.parentNode.removeChild(this)">
+</div>
+</div>
+</section>
+<section id="training-and-validation-1" class="level2">
+<h2 class="anchored" data-anchor-id="training-and-validation-1">4.3 Training and Validation</h2>
+<section id="model-instantiation" class="level3">
+<h3 class="anchored" data-anchor-id="model-instantiation">4.3.1 Model Instantiation</h3>
+<div id="cell-34" class="cell" data-cell_id="a58944a9209f49d99d7b84d19a9a2834" data-deepnote_cell_type="code" data-deepnote_to_be_reexecuted="false" data-execution_millis="254" data-execution_start="1673120439270" data-source_hash="ebe3f66e" data-execution_count="19">
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create model</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>parameterizedModel <span class="op">=</span> createParameterizedConvolutionalNeuralNetwork(trainData, numLayers, numFilters, kernelSize, maxPooling, dropoutValue, learningRate, numClasses<span class="op">=</span><span class="dv">2</span>)</span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"+ Your parameterized model has been created..."</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>+ Your parameterized model has been created...</code></pre>
+</div>
+</div>
+<div id="cell-35" class="cell" data-cell_id="16db5ab459b444128f6385ac4bfd2668" data-deepnote_cell_type="code" data-deepnote_to_be_reexecuted="false" data-execution_millis="55" data-execution_start="1673120439528" data-source_hash="713b3f04" data-execution_count="20">
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="co"># You can create the other model with the following line</span></span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>nonParameterizedModel <span class="op">=</span> createNuancedConvolutionalNeuralNetwork(imagesData, numClasses <span class="op">=</span> <span class="dv">2</span>)</span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"+ Your non parameterized model has been created..."</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>+ Your non parameterized model has been created...</code></pre>
+</div>
+</div>
+<div id="cell-36" class="cell" data-cell_id="9ef3f3346e6c4d54a5c4906e5849a781" data-deepnote_cell_type="code" data-deepnote_to_be_reexecuted="false" data-execution_millis="1" data-execution_start="1673120439626" data-source_hash="5176a77d" data-execution_count="21">
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="co">#####################################################################################################################################################</span></span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Things you can change                                                                                                                             </span></span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a><span class="co">#####################################################################################################################################################</span></span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Please assign model the deep learning model you want to use i.e parameterizedModel or nonParameterizedModel</span></span>
+<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> parameterizedModel</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="model-training-and-validation" class="level3">
+<h3 class="anchored" data-anchor-id="model-training-and-validation">4.3.2 Model Training and Validation</h3>
+<div id="cell-38" class="cell" data-cell_id="8dec7a07422d49438054da63e64ed163" data-deepnote_cell_type="code" data-deepnote_to_be_reexecuted="false" data-execution_millis="46625" data-execution_start="1673120439627" data-source_hash="bf2960e9" data-execution_count="22">
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> keras.callbacks <span class="im">import</span> EarlyStopping, ReduceLROnPlateau</span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Early stopping to prevent overfitting</span></span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>early_stop <span class="op">=</span> EarlyStopping(</span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a>    monitor<span class="op">=</span><span class="st">'val_auc'</span>,</span>
+<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a>    patience<span class="op">=</span><span class="dv">2</span>,  <span class="co"># Stop after 2 stagnant epochs</span></span>
+<span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a>    restore_best_weights<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb32-8"><a href="#cb32-8" aria-hidden="true" tabindex="-1"></a>    mode<span class="op">=</span><span class="st">'max'</span></span>
+<span id="cb32-9"><a href="#cb32-9" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb32-10"><a href="#cb32-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-11"><a href="#cb32-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-12"><a href="#cb32-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Reduce learning rate when a metric has stopped improving</span></span>
+<span id="cb32-13"><a href="#cb32-13" aria-hidden="true" tabindex="-1"></a>lr_reduce <span class="op">=</span> ReduceLROnPlateau(</span>
+<span id="cb32-14"><a href="#cb32-14" aria-hidden="true" tabindex="-1"></a>    monitor<span class="op">=</span><span class="st">'val_auc'</span>,       <span class="co"># Monitor validation AUC</span></span>
+<span id="cb32-15"><a href="#cb32-15" aria-hidden="true" tabindex="-1"></a>    factor<span class="op">=</span><span class="fl">0.5</span>,              <span class="co"># Reduce learning rate by half</span></span>
+<span id="cb32-16"><a href="#cb32-16" aria-hidden="true" tabindex="-1"></a>    patience<span class="op">=</span><span class="dv">3</span>,              <span class="co"># Wait for 3 epochs before reducing LR</span></span>
+<span id="cb32-17"><a href="#cb32-17" aria-hidden="true" tabindex="-1"></a>    min_lr<span class="op">=</span><span class="fl">1e-7</span>,             <span class="co"># Don't go below this learning rate</span></span>
+<span id="cb32-18"><a href="#cb32-18" aria-hidden="true" tabindex="-1"></a>    mode<span class="op">=</span><span class="st">'max'</span>               <span class="co"># Because higher AUC is better</span></span>
+<span id="cb32-19"><a href="#cb32-19" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb32-20"><a href="#cb32-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-21"><a href="#cb32-21" aria-hidden="true" tabindex="-1"></a>USE_DATA_AUGMENTATION <span class="op">=</span> <span class="va">True</span>  <span class="co"># or False, depending on whether you want to use it</span></span>
+<span id="cb32-22"><a href="#cb32-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-23"><a href="#cb32-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-24"><a href="#cb32-24" aria-hidden="true" tabindex="-1"></a>bestAcc <span class="op">=</span> <span class="fl">0.0</span></span>
+<span id="cb32-25"><a href="#cb32-25" aria-hidden="true" tabindex="-1"></a>bestEpoch <span class="op">=</span> <span class="dv">0</span></span>
+<span id="cb32-26"><a href="#cb32-26" aria-hidden="true" tabindex="-1"></a>bestAccPredictions, bestAccPredictionProbabilities <span class="op">=</span> [], []</span>
+<span id="cb32-27"><a href="#cb32-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-28"><a href="#cb32-28" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"+ Starting training. Each epoch can take about 2-5 minutes, hold tight!"</span>)</span>
+<span id="cb32-29"><a href="#cb32-29" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"-----------------------------------------------------------------------</span><span class="ch">\n</span><span class="st">"</span>)</span>
+<span id="cb32-30"><a href="#cb32-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-31"><a href="#cb32-31" aria-hidden="true" tabindex="-1"></a><span class="co"># Define whether to use data augmentation</span></span>
+<span id="cb32-32"><a href="#cb32-32" aria-hidden="true" tabindex="-1"></a>USE_DATA_AUGMENTATION <span class="op">=</span> <span class="va">True</span>  <span class="co"># Set to False if you want to disable it</span></span>
+<span id="cb32-33"><a href="#cb32-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-34"><a href="#cb32-34" aria-hidden="true" tabindex="-1"></a>optimizedModel <span class="op">=</span> createOptimizedCNN(trainData.shape[<span class="dv">1</span>:], numClasses)</span>
+<span id="cb32-35"><a href="#cb32-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-36"><a href="#cb32-36" aria-hidden="true" tabindex="-1"></a><span class="co"># Fit with callbacks</span></span>
+<span id="cb32-37"><a href="#cb32-37" aria-hidden="true" tabindex="-1"></a>history <span class="op">=</span> optimizedModel.fit(</span>
+<span id="cb32-38"><a href="#cb32-38" aria-hidden="true" tabindex="-1"></a>    dataAugmentation.flow(trainData, trainLabels, batch_size<span class="op">=</span>batchSize),</span>
+<span id="cb32-39"><a href="#cb32-39" aria-hidden="true" tabindex="-1"></a>    validation_data<span class="op">=</span>(testData, testLabels),</span>
+<span id="cb32-40"><a href="#cb32-40" aria-hidden="true" tabindex="-1"></a>    epochs<span class="op">=</span><span class="dv">30</span>,  <span class="co"># Reduced for speed</span></span>
+<span id="cb32-41"><a href="#cb32-41" aria-hidden="true" tabindex="-1"></a>    class_weight<span class="op">=</span>{<span class="dv">0</span>: <span class="dv">1</span>, <span class="dv">1</span>: <span class="fl">1.5</span>},</span>
+<span id="cb32-42"><a href="#cb32-42" aria-hidden="true" tabindex="-1"></a>    callbacks<span class="op">=</span>[early_stop, lr_reduce],</span>
+<span id="cb32-43"><a href="#cb32-43" aria-hidden="true" tabindex="-1"></a>    verbose<span class="op">=</span><span class="dv">2</span></span>
+<span id="cb32-44"><a href="#cb32-44" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb32-45"><a href="#cb32-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-46"><a href="#cb32-46" aria-hidden="true" tabindex="-1"></a>imageData <span class="op">=</span> load_img(fullPath, color_mode<span class="op">=</span><span class="st">"grayscale"</span>, target_size<span class="op">=</span>(<span class="dv">128</span>, <span class="dv">128</span>))</span>
+<span id="cb32-47"><a href="#cb32-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-48"><a href="#cb32-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-49"><a href="#cb32-49" aria-hidden="true" tabindex="-1"></a><span class="co"># Start Training Loop</span></span>
+<span id="cb32-50"><a href="#cb32-50" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> epoch <span class="kw">in</span> <span class="bu">range</span>(epochs):</span>
+<span id="cb32-51"><a href="#cb32-51" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"Epoch </span><span class="sc">{</span>epoch <span class="op">+</span> <span class="dv">1</span><span class="sc">}</span><span class="ss">/</span><span class="sc">{</span>epochs<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb32-52"><a href="#cb32-52" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-53"><a href="#cb32-53" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> USE_DATA_AUGMENTATION:</span>
+<span id="cb32-54"><a href="#cb32-54" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Use augmented data consistently for better generalization</span></span>
+<span id="cb32-55"><a href="#cb32-55" aria-hidden="true" tabindex="-1"></a>        history <span class="op">=</span> model.fit(</span>
+<span id="cb32-56"><a href="#cb32-56" aria-hidden="true" tabindex="-1"></a>        dataAugmentation.flow(trainData, trainLabels, batch_size<span class="op">=</span>batchSize),</span>
+<span id="cb32-57"><a href="#cb32-57" aria-hidden="true" tabindex="-1"></a>        validation_data<span class="op">=</span>(testData, testLabels),</span>
+<span id="cb32-58"><a href="#cb32-58" aria-hidden="true" tabindex="-1"></a>        epochs<span class="op">=</span><span class="dv">50</span>,  <span class="co"># Allow more epochs, but early stopping will handle overfitting</span></span>
+<span id="cb32-59"><a href="#cb32-59" aria-hidden="true" tabindex="-1"></a>        callbacks<span class="op">=</span>[lr_reduce, early_stop],</span>
+<span id="cb32-60"><a href="#cb32-60" aria-hidden="true" tabindex="-1"></a>        class_weight<span class="op">=</span>{<span class="dv">0</span>: <span class="dv">1</span>, <span class="dv">1</span>: <span class="fl">1.5</span>},</span>
+<span id="cb32-61"><a href="#cb32-61" aria-hidden="true" tabindex="-1"></a>        verbose<span class="op">=</span><span class="dv">2</span>)</span>
+<span id="cb32-62"><a href="#cb32-62" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
+<span id="cb32-63"><a href="#cb32-63" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Train without data augmentation</span></span>
+<span id="cb32-64"><a href="#cb32-64" aria-hidden="true" tabindex="-1"></a>        history <span class="op">=</span> model.fit(trainData, trainLabels,</span>
+<span id="cb32-65"><a href="#cb32-65" aria-hidden="true" tabindex="-1"></a>                            batch_size<span class="op">=</span>batchSize,</span>
+<span id="cb32-66"><a href="#cb32-66" aria-hidden="true" tabindex="-1"></a>                            epochs<span class="op">=</span><span class="dv">1</span>,</span>
+<span id="cb32-67"><a href="#cb32-67" aria-hidden="true" tabindex="-1"></a>                            validation_data<span class="op">=</span>(testData, testLabels),</span>
+<span id="cb32-68"><a href="#cb32-68" aria-hidden="true" tabindex="-1"></a>                            class_weight<span class="op">=</span>{<span class="dv">0</span>: <span class="dv">1</span>, <span class="dv">1</span>: <span class="fl">1.5</span>},</span>
+<span id="cb32-69"><a href="#cb32-69" aria-hidden="true" tabindex="-1"></a>                            verbose<span class="op">=</span><span class="dv">2</span>)</span>
+<span id="cb32-70"><a href="#cb32-70" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-71"><a href="#cb32-71" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb32-72"><a href="#cb32-72" aria-hidden="true" tabindex="-1"></a>    <span class="co">#################################################### Model Testing ###############################################################</span></span>
+<span id="cb32-73"><a href="#cb32-73" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Evaluate on validation set</span></span>
+<span id="cb32-74"><a href="#cb32-74" aria-hidden="true" tabindex="-1"></a>    accuracy <span class="op">=</span> <span class="bu">round</span>(model.evaluate(testData, testLabels, verbose<span class="op">=</span><span class="dv">0</span>)[<span class="dv">1</span>] <span class="op">*</span> <span class="dv">100</span>, <span class="dv">3</span>)</span>
+<span id="cb32-75"><a href="#cb32-75" aria-hidden="true" tabindex="-1"></a>    predictions <span class="op">=</span> model.predict(testData)</span>
+<span id="cb32-76"><a href="#cb32-76" aria-hidden="true" tabindex="-1"></a>    AccPredictionProbabilities <span class="op">=</span> predictions</span>
+<span id="cb32-77"><a href="#cb32-77" aria-hidden="true" tabindex="-1"></a>    AccPredictions <span class="op">=</span> [<span class="dv">1</span> <span class="cf">if</span> item[<span class="dv">1</span>] <span class="op">&gt;</span> item[<span class="dv">0</span>] <span class="cf">else</span> <span class="dv">0</span> <span class="cf">for</span> item <span class="kw">in</span> AccPredictionProbabilities]</span>
+<span id="cb32-78"><a href="#cb32-78" aria-hidden="true" tabindex="-1"></a>    epochAUC <span class="op">=</span> calculateMetrics(AccPredictions, AccPredictionProbabilities, testLabels)</span>
+<span id="cb32-79"><a href="#cb32-79" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-80"><a href="#cb32-80" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"+ Test accuracy at epoch </span><span class="sc">{</span>epoch <span class="op">+</span> <span class="dv">1</span><span class="sc">}</span><span class="ss"> is: </span><span class="sc">{</span>accuracy<span class="sc">:.2f}</span><span class="ss">"</span>)</span>
+<span id="cb32-81"><a href="#cb32-81" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"+ Test AUC at epoch </span><span class="sc">{</span>epoch <span class="op">+</span> <span class="dv">1</span><span class="sc">}</span><span class="ss"> is: </span><span class="sc">{</span>epochAUC<span class="sc">:.3f}</span><span class="ss">"</span>)</span>
+<span id="cb32-82"><a href="#cb32-82" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-83"><a href="#cb32-83" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Logging results</span></span>
+<span id="cb32-84"><a href="#cb32-84" aria-hidden="true" tabindex="-1"></a>    <span class="cf">with</span> <span class="bu">open</span>(<span class="st">"results/Log.txt"</span>, <span class="st">"a"</span>) <span class="im">as</span> outputFile:</span>
+<span id="cb32-85"><a href="#cb32-85" aria-hidden="true" tabindex="-1"></a>        outputFile.write(<span class="ss">f"Epoch-Accuracy-AUC </span><span class="ch">\t</span><span class="ss"> </span><span class="sc">{</span>epoch <span class="op">+</span> <span class="dv">1</span><span class="sc">}</span><span class="ss"> </span><span class="ch">\t</span><span class="ss"> </span><span class="sc">{</span>accuracy<span class="sc">:.2f}</span><span class="ss"> </span><span class="ch">\t</span><span class="ss"> </span><span class="sc">{</span>epochAUC<span class="sc">:.3f}</span><span class="ss"> </span><span class="ch">\n</span><span class="ss">"</span>)</span>
+<span id="cb32-86"><a href="#cb32-86" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb32-87"><a href="#cb32-87" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Save best model based on AUC</span></span>
+<span id="cb32-88"><a href="#cb32-88" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> epochAUC <span class="op">&gt;</span> bestAcc:</span>
+<span id="cb32-89"><a href="#cb32-89" aria-hidden="true" tabindex="-1"></a>        bestEpoch <span class="op">=</span> epoch <span class="op">+</span> <span class="dv">1</span></span>
+<span id="cb32-90"><a href="#cb32-90" aria-hidden="true" tabindex="-1"></a>        bestAcc <span class="op">=</span> epochAUC</span>
+<span id="cb32-91"><a href="#cb32-91" aria-hidden="true" tabindex="-1"></a>        bestAccPredictions <span class="op">=</span> AccPredictions</span>
+<span id="cb32-92"><a href="#cb32-92" aria-hidden="true" tabindex="-1"></a>        bestAccPredictionProbabilities <span class="op">=</span> AccPredictionProbabilities</span>
+<span id="cb32-93"><a href="#cb32-93" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-94"><a href="#cb32-94" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Save predictions for Kaggle submission</span></span>
+<span id="cb32-95"><a href="#cb32-95" aria-hidden="true" tabindex="-1"></a>        kaggleResultsFileName <span class="op">=</span> <span class="ss">f"epoch-</span><span class="sc">{</span>epoch <span class="op">+</span> <span class="dv">1</span><span class="sc">}</span><span class="ss">-results.csv"</span></span>
+<span id="cb32-96"><a href="#cb32-96" aria-hidden="true" tabindex="-1"></a>        getKagglePredictions(model, kaggleTestImages, kaggleResultsFileName)</span>
+<span id="cb32-97"><a href="#cb32-97" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="ss">f"+ Saved Kaggle predictions to </span><span class="sc">{</span>kaggleResultsFileName<span class="sc">}</span><span class="ch">\n</span><span class="ss">"</span>)</span>
+<span id="cb32-98"><a href="#cb32-98" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb32-99"><a href="#cb32-99" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">'</span><span class="ch">\n</span><span class="st">'</span> <span class="op">+</span> <span class="st">'-'</span><span class="op">*</span><span class="dv">72</span> <span class="op">+</span> <span class="st">'</span><span class="ch">\n</span><span class="st">'</span>)</span>
+<span id="cb32-100"><a href="#cb32-100" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-101"><a href="#cb32-101" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"------------------------------------------------------------------------"</span>)</span>
+<span id="cb32-102"><a href="#cb32-102" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"*** Best AUC achieved: </span><span class="sc">{</span>bestAcc<span class="sc">:.3f}</span><span class="ss"> at epoch </span><span class="sc">{</span>bestEpoch<span class="sc">}</span><span class="ss"> ***"</span>)</span>
+<span id="cb32-103"><a href="#cb32-103" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"------------------------------------------------------------------------"</span>)</span>
+<span id="cb32-104"><a href="#cb32-104" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-105"><a href="#cb32-105" aria-hidden="true" tabindex="-1"></a><span class="co">##################################################### Printing Best Metrics ##########################################################</span></span>
+<span id="cb32-106"><a href="#cb32-106" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"</span><span class="ch">\n</span><span class="ss">*** Printing our best validation results from epoch </span><span class="sc">{</span>bestEpoch<span class="sc">}</span><span class="ss"> ..."</span>)</span>
+<span id="cb32-107"><a href="#cb32-107" aria-hidden="true" tabindex="-1"></a>calculateMetricsAndPrint(bestAccPredictions, bestAccPredictionProbabilities, testLabels)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>+ Starting training. Each epoch can take about 2-5 minutes, hold tight!
+-----------------------------------------------------------------------
+
+Epoch 1/30
+288/288 - 205s - loss: 2.4118 - accuracy: 0.7353 - auc: 0.7901 - val_loss: 142.2976 - val_accuracy: 0.5009 - val_auc: 0.5009 - lr: 1.0000e-04 - 205s/epoch - 710ms/step
+Epoch 2/30
+288/288 - 200s - loss: 0.8436 - accuracy: 0.8071 - auc: 0.8905 - val_loss: 126.7935 - val_accuracy: 0.5009 - val_auc: 0.5009 - lr: 1.0000e-04 - 200s/epoch - 693ms/step
+Epoch 3/30
+288/288 - 199s - loss: 0.7634 - accuracy: 0.8380 - auc: 0.9036 - val_loss: 1.7082 - val_accuracy: 0.7948 - val_auc: 0.8544 - lr: 1.0000e-04 - 199s/epoch - 692ms/step
+Epoch 4/30
+288/288 - 199s - loss: 0.6828 - accuracy: 0.8472 - auc: 0.9279 - val_loss: 6.4984 - val_accuracy: 0.7357 - val_auc: 0.7478 - lr: 1.0000e-04 - 199s/epoch - 691ms/step
+Epoch 5/30
+288/288 - 202s - loss: 0.6674 - accuracy: 0.8681 - auc: 0.9330 - val_loss: 28.9572 - val_accuracy: 0.5548 - val_auc: 0.5632 - lr: 1.0000e-04 - 202s/epoch - 700ms/step
+Epoch 1/30
+Epoch 1/50
+288/288 - 19s - loss: 0.8029 - accuracy: 0.5703 - auc: 0.6120 - val_loss: 0.4915 - val_accuracy: 0.7583 - val_auc: 0.8474 - lr: 5.0000e-04 - 19s/epoch - 67ms/step
+Epoch 2/50
+288/288 - 18s - loss: 0.4804 - accuracy: 0.8241 - auc: 0.8987 - val_loss: 0.2665 - val_accuracy: 0.9148 - val_auc: 0.9559 - lr: 5.0000e-04 - 18s/epoch - 63ms/step
+Epoch 3/50
+288/288 - 18s - loss: 0.4318 - accuracy: 0.8468 - auc: 0.9208 - val_loss: 0.2346 - val_accuracy: 0.9130 - val_auc: 0.9671 - lr: 5.0000e-04 - 18s/epoch - 63ms/step
+Epoch 4/50
+288/288 - 18s - loss: 0.3792 - accuracy: 0.8720 - auc: 0.9391 - val_loss: 0.3284 - val_accuracy: 0.8852 - val_auc: 0.9377 - lr: 5.0000e-04 - 18s/epoch - 63ms/step
+Epoch 5/50
+288/288 - 18s - loss: 0.3819 - accuracy: 0.8755 - auc: 0.9394 - val_loss: 0.2586 - val_accuracy: 0.9183 - val_auc: 0.9652 - lr: 5.0000e-04 - 18s/epoch - 63ms/step
+18/18 [==============================] - 1s 43ms/step
++ Test accuracy at epoch 1 is: 91.30
++ Test AUC at epoch 1 is: 96.790
++ Writing kaggle test results in : results/epoch-1-results.csv...
+7/7 [==============================] - 0s 38ms/step
++ Saved Kaggle predictions to epoch-1-results.csv
+
+
+------------------------------------------------------------------------
+
+Epoch 2/30
+Epoch 1/50
+288/288 - 19s - loss: 0.3781 - accuracy: 0.8781 - auc: 0.9390 - val_loss: 0.2302 - val_accuracy: 0.9235 - val_auc: 0.9675 - lr: 5.0000e-04 - 19s/epoch - 64ms/step
+Epoch 2/50
+288/288 - 18s - loss: 0.3792 - accuracy: 0.8685 - auc: 0.9411 - val_loss: 0.2247 - val_accuracy: 0.9235 - val_auc: 0.9683 - lr: 5.0000e-04 - 18s/epoch - 64ms/step
+Epoch 3/50
+288/288 - 18s - loss: 0.3582 - accuracy: 0.8825 - auc: 0.9468 - val_loss: 0.2533 - val_accuracy: 0.9096 - val_auc: 0.9628 - lr: 5.0000e-04 - 18s/epoch - 64ms/step
+Epoch 4/50
+288/288 - 19s - loss: 0.3700 - accuracy: 0.8838 - auc: 0.9433 - val_loss: 0.2164 - val_accuracy: 0.9339 - val_auc: 0.9711 - lr: 5.0000e-04 - 19s/epoch - 65ms/step
+Epoch 5/50
+288/288 - 18s - loss: 0.3496 - accuracy: 0.8946 - auc: 0.9491 - val_loss: 0.2364 - val_accuracy: 0.9148 - val_auc: 0.9648 - lr: 5.0000e-04 - 18s/epoch - 64ms/step
+Epoch 6/50
+288/288 - 18s - loss: 0.3429 - accuracy: 0.8899 - auc: 0.9498 - val_loss: 0.2436 - val_accuracy: 0.9200 - val_auc: 0.9632 - lr: 5.0000e-04 - 18s/epoch - 63ms/step
+18/18 [==============================] - 1s 43ms/step
++ Test accuracy at epoch 2 is: 93.39
++ Test AUC at epoch 2 is: 97.320
++ Writing kaggle test results in : results/epoch-2-results.csv...
+7/7 [==============================] - 0s 38ms/step
++ Saved Kaggle predictions to epoch-2-results.csv
+
+
+------------------------------------------------------------------------
+
+Epoch 3/30
+Epoch 1/50
+288/288 - 19s - loss: 0.3541 - accuracy: 0.8872 - auc: 0.9473 - val_loss: 0.2241 - val_accuracy: 0.9235 - val_auc: 0.9683 - lr: 5.0000e-04 - 19s/epoch - 65ms/step
+Epoch 2/50
+288/288 - 18s - loss: 0.3327 - accuracy: 0.8938 - auc: 0.9535 - val_loss: 0.2269 - val_accuracy: 0.9339 - val_auc: 0.9713 - lr: 5.0000e-04 - 18s/epoch - 64ms/step
+Epoch 3/50
+288/288 - 18s - loss: 0.3438 - accuracy: 0.8881 - auc: 0.9503 - val_loss: 0.2470 - val_accuracy: 0.9200 - val_auc: 0.9618 - lr: 5.0000e-04 - 18s/epoch - 64ms/step
+Epoch 4/50
+288/288 - 18s - loss: 0.3375 - accuracy: 0.8929 - auc: 0.9523 - val_loss: 0.2224 - val_accuracy: 0.9270 - val_auc: 0.9711 - lr: 5.0000e-04 - 18s/epoch - 64ms/step
+18/18 [==============================] - 1s 43ms/step
++ Test accuracy at epoch 3 is: 93.39
++ Test AUC at epoch 3 is: 97.180
+
+------------------------------------------------------------------------
+
+Epoch 4/30
+Epoch 1/50
+288/288 - 18s - loss: 0.3425 - accuracy: 0.8933 - auc: 0.9517 - val_loss: 0.2265 - val_accuracy: 0.9217 - val_auc: 0.9688 - lr: 5.0000e-04 - 18s/epoch - 64ms/step
+Epoch 2/50
+288/288 - 18s - loss: 0.3433 - accuracy: 0.8942 - auc: 0.9513 - val_loss: 0.2769 - val_accuracy: 0.8904 - val_auc: 0.9547 - lr: 5.0000e-04 - 18s/epoch - 64ms/step
+Epoch 3/50
+288/288 - 18s - loss: 0.3265 - accuracy: 0.8916 - auc: 0.9545 - val_loss: 0.2053 - val_accuracy: 0.9304 - val_auc: 0.9750 - lr: 5.0000e-04 - 18s/epoch - 64ms/step
+Epoch 4/50
+288/288 - 19s - loss: 0.3039 - accuracy: 0.9047 - auc: 0.9602 - val_loss: 0.2451 - val_accuracy: 0.9217 - val_auc: 0.9664 - lr: 5.0000e-04 - 19s/epoch - 67ms/step
+Epoch 5/50
+288/288 - 19s - loss: 0.3177 - accuracy: 0.9034 - auc: 0.9575 - val_loss: 0.1987 - val_accuracy: 0.9357 - val_auc: 0.9757 - lr: 5.0000e-04 - 19s/epoch - 65ms/step
+Epoch 6/50
+288/288 - 19s - loss: 0.3107 - accuracy: 0.8973 - auc: 0.9582 - val_loss: 0.2342 - val_accuracy: 0.9252 - val_auc: 0.9695 - lr: 5.0000e-04 - 19s/epoch - 64ms/step
+Epoch 7/50
+288/288 - 18s - loss: 0.2909 - accuracy: 0.9090 - auc: 0.9647 - val_loss: 0.2581 - val_accuracy: 0.9183 - val_auc: 0.9658 - lr: 5.0000e-04 - 18s/epoch - 64ms/step
+18/18 [==============================] - 1s 43ms/step
++ Test accuracy at epoch 4 is: 93.56
++ Test AUC at epoch 4 is: 97.590
++ Writing kaggle test results in : results/epoch-4-results.csv...
+7/7 [==============================] - 0s 39ms/step
++ Saved Kaggle predictions to epoch-4-results.csv
+
+
+------------------------------------------------------------------------
+
+Epoch 5/30
+Epoch 1/50
+288/288 - 19s - loss: 0.3013 - accuracy: 0.9081 - auc: 0.9613 - val_loss: 0.2134 - val_accuracy: 0.9409 - val_auc: 0.9720 - lr: 5.0000e-04 - 19s/epoch - 66ms/step
+Epoch 2/50
+288/288 - 19s - loss: 0.2904 - accuracy: 0.9055 - auc: 0.9641 - val_loss: 0.1985 - val_accuracy: 0.9322 - val_auc: 0.9751 - lr: 5.0000e-04 - 19s/epoch - 67ms/step
+Epoch 3/50
+288/288 - 20s - loss: 0.2952 - accuracy: 0.9138 - auc: 0.9630 - val_loss: 0.2254 - val_accuracy: 0.9374 - val_auc: 0.9711 - lr: 5.0000e-04 - 20s/epoch - 68ms/step
+Epoch 4/50
+288/288 - 19s - loss: 0.2893 - accuracy: 0.9081 - auc: 0.9638 - val_loss: 0.1878 - val_accuracy: 0.9443 - val_auc: 0.9770 - lr: 5.0000e-04 - 19s/epoch - 68ms/step
+Epoch 5/50
+288/288 - 19s - loss: 0.2778 - accuracy: 0.9147 - auc: 0.9669 - val_loss: 0.1971 - val_accuracy: 0.9374 - val_auc: 0.9745 - lr: 5.0000e-04 - 19s/epoch - 67ms/step
+Epoch 6/50
+288/288 - 20s - loss: 0.2876 - accuracy: 0.9020 - auc: 0.9647 - val_loss: 0.1956 - val_accuracy: 0.9357 - val_auc: 0.9785 - lr: 5.0000e-04 - 20s/epoch - 69ms/step
+Epoch 7/50
+288/288 - 19s - loss: 0.2974 - accuracy: 0.9103 - auc: 0.9636 - val_loss: 0.1916 - val_accuracy: 0.9426 - val_auc: 0.9768 - lr: 5.0000e-04 - 19s/epoch - 67ms/step
+Epoch 8/50
+288/288 - 19s - loss: 0.3018 - accuracy: 0.9129 - auc: 0.9609 - val_loss: 0.1867 - val_accuracy: 0.9409 - val_auc: 0.9819 - lr: 5.0000e-04 - 19s/epoch - 66ms/step
+Epoch 9/50
+288/288 - 20s - loss: 0.2914 - accuracy: 0.9116 - auc: 0.9644 - val_loss: 0.1881 - val_accuracy: 0.9426 - val_auc: 0.9795 - lr: 5.0000e-04 - 20s/epoch - 69ms/step
+Epoch 10/50
+288/288 - 19s - loss: 0.2892 - accuracy: 0.9103 - auc: 0.9636 - val_loss: 0.1937 - val_accuracy: 0.9443 - val_auc: 0.9770 - lr: 5.0000e-04 - 19s/epoch - 67ms/step
+18/18 [==============================] - 1s 44ms/step
++ Test accuracy at epoch 5 is: 94.09
++ Test AUC at epoch 5 is: 98.140
++ Writing kaggle test results in : results/epoch-5-results.csv...
+7/7 [==============================] - 0s 39ms/step
++ Saved Kaggle predictions to epoch-5-results.csv
+
+
+------------------------------------------------------------------------
+
+Epoch 6/30
+Epoch 1/50
+288/288 - 19s - loss: 0.3047 - accuracy: 0.9090 - auc: 0.9604 - val_loss: 0.1950 - val_accuracy: 0.9339 - val_auc: 0.9754 - lr: 5.0000e-04 - 19s/epoch - 67ms/step
+Epoch 2/50
+288/288 - 20s - loss: 0.2666 - accuracy: 0.9225 - auc: 0.9694 - val_loss: 0.1914 - val_accuracy: 0.9339 - val_auc: 0.9781 - lr: 5.0000e-04 - 20s/epoch - 68ms/step
+Epoch 3/50
+288/288 - 19s - loss: 0.2904 - accuracy: 0.9086 - auc: 0.9631 - val_loss: 0.2152 - val_accuracy: 0.9235 - val_auc: 0.9737 - lr: 5.0000e-04 - 19s/epoch - 67ms/step
+Epoch 4/50
+288/288 - 19s - loss: 0.2691 - accuracy: 0.9147 - auc: 0.9689 - val_loss: 0.1926 - val_accuracy: 0.9443 - val_auc: 0.9784 - lr: 5.0000e-04 - 19s/epoch - 65ms/step
+Epoch 5/50
+288/288 - 19s - loss: 0.2896 - accuracy: 0.9147 - auc: 0.9632 - val_loss: 0.1934 - val_accuracy: 0.9443 - val_auc: 0.9798 - lr: 5.0000e-04 - 19s/epoch - 66ms/step
+Epoch 6/50
+288/288 - 18s - loss: 0.2685 - accuracy: 0.9177 - auc: 0.9686 - val_loss: 0.1708 - val_accuracy: 0.9461 - val_auc: 0.9831 - lr: 5.0000e-04 - 18s/epoch - 64ms/step
+Epoch 7/50
+288/288 - 18s - loss: 0.2696 - accuracy: 0.9199 - auc: 0.9687 - val_loss: 0.1806 - val_accuracy: 0.9374 - val_auc: 0.9803 - lr: 5.0000e-04 - 18s/epoch - 63ms/step
+Epoch 8/50
+288/288 - 18s - loss: 0.2716 - accuracy: 0.9186 - auc: 0.9685 - val_loss: 0.1854 - val_accuracy: 0.9426 - val_auc: 0.9801 - lr: 5.0000e-04 - 18s/epoch - 64ms/step
+18/18 [==============================] - 1s 43ms/step
++ Test accuracy at epoch 6 is: 94.61
++ Test AUC at epoch 6 is: 98.480
++ Writing kaggle test results in : results/epoch-6-results.csv...
+7/7 [==============================] - 0s 38ms/step
++ Saved Kaggle predictions to epoch-6-results.csv
+
+
+------------------------------------------------------------------------
+
+Epoch 7/30
+Epoch 1/50
+288/288 - 18s - loss: 0.2750 - accuracy: 0.9177 - auc: 0.9679 - val_loss: 0.1887 - val_accuracy: 0.9530 - val_auc: 0.9816 - lr: 5.0000e-04 - 18s/epoch - 63ms/step
+Epoch 2/50
+288/288 - 18s - loss: 0.2573 - accuracy: 0.9238 - auc: 0.9717 - val_loss: 0.2147 - val_accuracy: 0.9200 - val_auc: 0.9716 - lr: 5.0000e-04 - 18s/epoch - 63ms/step
+Epoch 3/50
+288/288 - 18s - loss: 0.2559 - accuracy: 0.9229 - auc: 0.9721 - val_loss: 0.1928 - val_accuracy: 0.9391 - val_auc: 0.9772 - lr: 5.0000e-04 - 18s/epoch - 64ms/step
+18/18 [==============================] - 1s 42ms/step
++ Test accuracy at epoch 7 is: 95.30
++ Test AUC at epoch 7 is: 98.200
+
+------------------------------------------------------------------------
+
+Epoch 8/30
+Epoch 1/50
+288/288 - 18s - loss: 0.2762 - accuracy: 0.9168 - auc: 0.9678 - val_loss: 0.1806 - val_accuracy: 0.9496 - val_auc: 0.9830 - lr: 5.0000e-04 - 18s/epoch - 64ms/step
+Epoch 2/50
+288/288 - 18s - loss: 0.2712 - accuracy: 0.9203 - auc: 0.9687 - val_loss: 0.1885 - val_accuracy: 0.9426 - val_auc: 0.9790 - lr: 5.0000e-04 - 18s/epoch - 63ms/step
+Epoch 3/50
+288/288 - 19s - loss: 0.2556 - accuracy: 0.9273 - auc: 0.9718 - val_loss: 0.1848 - val_accuracy: 0.9409 - val_auc: 0.9782 - lr: 5.0000e-04 - 19s/epoch - 65ms/step
+18/18 [==============================] - 1s 43ms/step
++ Test accuracy at epoch 8 is: 94.96
++ Test AUC at epoch 8 is: 98.300
+
+------------------------------------------------------------------------
+
+Epoch 9/30
+Epoch 1/50
+288/288 - 19s - loss: 0.2659 - accuracy: 0.9190 - auc: 0.9692 - val_loss: 0.1955 - val_accuracy: 0.9287 - val_auc: 0.9788 - lr: 5.0000e-04 - 19s/epoch - 65ms/step
+Epoch 2/50
+288/288 - 19s - loss: 0.2604 - accuracy: 0.9277 - auc: 0.9709 - val_loss: 0.1669 - val_accuracy: 0.9426 - val_auc: 0.9823 - lr: 5.0000e-04 - 19s/epoch - 64ms/step
+Epoch 3/50
+288/288 - 18s - loss: 0.2613 - accuracy: 0.9147 - auc: 0.9702 - val_loss: 0.1978 - val_accuracy: 0.9304 - val_auc: 0.9762 - lr: 5.0000e-04 - 18s/epoch - 64ms/step
+Epoch 4/50
+288/288 - 18s - loss: 0.2385 - accuracy: 0.9308 - auc: 0.9752 - val_loss: 0.1653 - val_accuracy: 0.9478 - val_auc: 0.9834 - lr: 5.0000e-04 - 18s/epoch - 64ms/step
+Epoch 5/50
+288/288 - 18s - loss: 0.2556 - accuracy: 0.9151 - auc: 0.9719 - val_loss: 0.1861 - val_accuracy: 0.9478 - val_auc: 0.9841 - lr: 5.0000e-04 - 18s/epoch - 63ms/step
+Epoch 6/50
+288/288 - 19s - loss: 0.2639 - accuracy: 0.9221 - auc: 0.9696 - val_loss: 0.1968 - val_accuracy: 0.9339 - val_auc: 0.9748 - lr: 5.0000e-04 - 19s/epoch - 65ms/step
+Epoch 7/50
+288/288 - 20s - loss: 0.2619 - accuracy: 0.9216 - auc: 0.9708 - val_loss: 0.1748 - val_accuracy: 0.9461 - val_auc: 0.9826 - lr: 5.0000e-04 - 20s/epoch - 69ms/step
+18/18 [==============================] - 1s 44ms/step
++ Test accuracy at epoch 9 is: 94.78
++ Test AUC at epoch 9 is: 98.410
+
+------------------------------------------------------------------------
+
+Epoch 10/30
+Epoch 1/50
+288/288 - 19s - loss: 0.2580 - accuracy: 0.9251 - auc: 0.9712 - val_loss: 0.1803 - val_accuracy: 0.9426 - val_auc: 0.9842 - lr: 5.0000e-04 - 19s/epoch - 66ms/step
+Epoch 2/50
+288/288 - 19s - loss: 0.2468 - accuracy: 0.9208 - auc: 0.9740 - val_loss: 0.1568 - val_accuracy: 0.9478 - val_auc: 0.9849 - lr: 5.0000e-04 - 19s/epoch - 65ms/step
+Epoch 3/50
+288/288 - 19s - loss: 0.2536 - accuracy: 0.9234 - auc: 0.9723 - val_loss: 0.2013 - val_accuracy: 0.9304 - val_auc: 0.9743 - lr: 5.0000e-04 - 19s/epoch - 68ms/step
+Epoch 4/50
+288/288 - 20s - loss: 0.2772 - accuracy: 0.9142 - auc: 0.9674 - val_loss: 0.1881 - val_accuracy: 0.9391 - val_auc: 0.9774 - lr: 5.0000e-04 - 20s/epoch - 70ms/step
+18/18 [==============================] - 1s 46ms/step
++ Test accuracy at epoch 10 is: 94.78
++ Test AUC at epoch 10 is: 98.580
++ Writing kaggle test results in : results/epoch-10-results.csv...
+7/7 [==============================] - 0s 51ms/step
++ Saved Kaggle predictions to epoch-10-results.csv
+
+
+------------------------------------------------------------------------
+
+Epoch 11/30
+Epoch 1/50
+288/288 - 20s - loss: 0.2632 - accuracy: 0.9212 - auc: 0.9711 - val_loss: 0.1616 - val_accuracy: 0.9461 - val_auc: 0.9830 - lr: 5.0000e-04 - 20s/epoch - 68ms/step
+Epoch 2/50
+288/288 - 20s - loss: 0.2683 - accuracy: 0.9168 - auc: 0.9688 - val_loss: 0.1653 - val_accuracy: 0.9513 - val_auc: 0.9849 - lr: 5.0000e-04 - 20s/epoch - 69ms/step
+Epoch 3/50
+288/288 - 19s - loss: 0.2638 - accuracy: 0.9173 - auc: 0.9693 - val_loss: 0.1674 - val_accuracy: 0.9426 - val_auc: 0.9843 - lr: 5.0000e-04 - 19s/epoch - 68ms/step
+Epoch 4/50
+288/288 - 19s - loss: 0.2617 - accuracy: 0.9238 - auc: 0.9712 - val_loss: 0.2094 - val_accuracy: 0.9235 - val_auc: 0.9731 - lr: 5.0000e-04 - 19s/epoch - 66ms/step
+18/18 [==============================] - 1s 48ms/step
++ Test accuracy at epoch 11 is: 95.13
++ Test AUC at epoch 11 is: 98.550
+
+------------------------------------------------------------------------
+
+Epoch 12/30
+Epoch 1/50
+288/288 - 20s - loss: 0.2619 - accuracy: 0.9195 - auc: 0.9704 - val_loss: 0.1637 - val_accuracy: 0.9530 - val_auc: 0.9825 - lr: 5.0000e-04 - 20s/epoch - 69ms/step
+Epoch 2/50
+288/288 - 19s - loss: 0.2572 - accuracy: 0.9234 - auc: 0.9712 - val_loss: 0.1835 - val_accuracy: 0.9339 - val_auc: 0.9794 - lr: 5.0000e-04 - 19s/epoch - 67ms/step
+Epoch 3/50
+288/288 - 19s - loss: 0.2495 - accuracy: 0.9273 - auc: 0.9721 - val_loss: 0.1675 - val_accuracy: 0.9496 - val_auc: 0.9823 - lr: 5.0000e-04 - 19s/epoch - 66ms/step
+18/18 [==============================] - 1s 42ms/step
++ Test accuracy at epoch 12 is: 95.30
++ Test AUC at epoch 12 is: 98.300
+
+------------------------------------------------------------------------
+
+Epoch 13/30
+Epoch 1/50
+288/288 - 19s - loss: 0.2561 - accuracy: 0.9264 - auc: 0.9718 - val_loss: 0.2046 - val_accuracy: 0.9374 - val_auc: 0.9738 - lr: 5.0000e-04 - 19s/epoch - 65ms/step
+Epoch 2/50
+288/288 - 18s - loss: 0.2475 - accuracy: 0.9242 - auc: 0.9732 - val_loss: 0.2072 - val_accuracy: 0.9096 - val_auc: 0.9733 - lr: 5.0000e-04 - 18s/epoch - 63ms/step
+Epoch 3/50
+288/288 - 19s - loss: 0.2612 - accuracy: 0.9173 - auc: 0.9714 - val_loss: 0.1778 - val_accuracy: 0.9391 - val_auc: 0.9799 - lr: 5.0000e-04 - 19s/epoch - 64ms/step
+Epoch 4/50
+288/288 - 19s - loss: 0.2585 - accuracy: 0.9242 - auc: 0.9708 - val_loss: 0.1776 - val_accuracy: 0.9478 - val_auc: 0.9795 - lr: 5.0000e-04 - 19s/epoch - 66ms/step
+Epoch 5/50
+288/288 - 18s - loss: 0.2325 - accuracy: 0.9312 - auc: 0.9763 - val_loss: 0.1862 - val_accuracy: 0.9461 - val_auc: 0.9765 - lr: 5.0000e-04 - 18s/epoch - 64ms/step
+18/18 [==============================] - 1s 43ms/step
++ Test accuracy at epoch 13 is: 93.91
++ Test AUC at epoch 13 is: 98.000
+
+------------------------------------------------------------------------
+
+Epoch 14/30
+Epoch 1/50
+288/288 - 18s - loss: 0.2519 - accuracy: 0.9260 - auc: 0.9721 - val_loss: 0.1631 - val_accuracy: 0.9426 - val_auc: 0.9846 - lr: 5.0000e-04 - 18s/epoch - 64ms/step
+Epoch 2/50
+288/288 - 19s - loss: 0.2458 - accuracy: 0.9260 - auc: 0.9740 - val_loss: 0.1577 - val_accuracy: 0.9513 - val_auc: 0.9837 - lr: 5.0000e-04 - 19s/epoch - 65ms/step
+Epoch 3/50
+288/288 - 19s - loss: 0.2453 - accuracy: 0.9216 - auc: 0.9738 - val_loss: 0.1845 - val_accuracy: 0.9478 - val_auc: 0.9826 - lr: 5.0000e-04 - 19s/epoch - 64ms/step
+18/18 [==============================] - 1s 43ms/step
++ Test accuracy at epoch 14 is: 94.26
++ Test AUC at epoch 14 is: 98.520
+
+------------------------------------------------------------------------
+
+Epoch 15/30
+Epoch 1/50
+288/288 - 19s - loss: 0.2562 - accuracy: 0.9173 - auc: 0.9712 - val_loss: 0.1947 - val_accuracy: 0.9270 - val_auc: 0.9766 - lr: 5.0000e-04 - 19s/epoch - 65ms/step
+Epoch 2/50
+288/288 - 19s - loss: 0.2542 - accuracy: 0.9260 - auc: 0.9713 - val_loss: 0.1865 - val_accuracy: 0.9322 - val_auc: 0.9829 - lr: 5.0000e-04 - 19s/epoch - 65ms/step
+Epoch 3/50
+288/288 - 19s - loss: 0.2309 - accuracy: 0.9334 - auc: 0.9768 - val_loss: 0.1847 - val_accuracy: 0.9304 - val_auc: 0.9784 - lr: 5.0000e-04 - 19s/epoch - 64ms/step
+Epoch 4/50
+288/288 - 18s - loss: 0.2563 - accuracy: 0.9203 - auc: 0.9726 - val_loss: 0.1825 - val_accuracy: 0.9391 - val_auc: 0.9796 - lr: 5.0000e-04 - 18s/epoch - 64ms/step
+18/18 [==============================] - 1s 42ms/step
++ Test accuracy at epoch 15 is: 93.22
++ Test AUC at epoch 15 is: 98.240
+
+------------------------------------------------------------------------
+
+Epoch 16/30
+Epoch 1/50
+288/288 - 19s - loss: 0.2371 - accuracy: 0.9264 - auc: 0.9758 - val_loss: 0.1685 - val_accuracy: 0.9426 - val_auc: 0.9816 - lr: 5.0000e-04 - 19s/epoch - 65ms/step
+Epoch 2/50
+288/288 - 19s - loss: 0.2445 - accuracy: 0.9229 - auc: 0.9740 - val_loss: 0.1714 - val_accuracy: 0.9496 - val_auc: 0.9820 - lr: 5.0000e-04 - 19s/epoch - 64ms/step
+Epoch 3/50
+288/288 - 19s - loss: 0.2466 - accuracy: 0.9277 - auc: 0.9735 - val_loss: 0.1590 - val_accuracy: 0.9530 - val_auc: 0.9850 - lr: 5.0000e-04 - 19s/epoch - 66ms/step
+Epoch 4/50
+288/288 - 19s - loss: 0.2426 - accuracy: 0.9269 - auc: 0.9746 - val_loss: 0.1899 - val_accuracy: 0.9374 - val_auc: 0.9783 - lr: 5.0000e-04 - 19s/epoch - 66ms/step
+Epoch 5/50
+288/288 - 19s - loss: 0.2505 - accuracy: 0.9286 - auc: 0.9730 - val_loss: 0.1689 - val_accuracy: 0.9391 - val_auc: 0.9828 - lr: 5.0000e-04 - 19s/epoch - 67ms/step
+18/18 [==============================] - 1s 45ms/step
++ Test accuracy at epoch 16 is: 95.30
++ Test AUC at epoch 16 is: 98.490
+
+------------------------------------------------------------------------
+
+Epoch 17/30
+Epoch 1/50
+288/288 - 19s - loss: 0.2451 - accuracy: 0.9216 - auc: 0.9732 - val_loss: 0.1702 - val_accuracy: 0.9409 - val_auc: 0.9808 - lr: 5.0000e-04 - 19s/epoch - 65ms/step
+Epoch 2/50
+288/288 - 19s - loss: 0.2568 - accuracy: 0.9155 - auc: 0.9714 - val_loss: 0.1748 - val_accuracy: 0.9287 - val_auc: 0.9812 - lr: 5.0000e-04 - 19s/epoch - 65ms/step
+Epoch 3/50
+288/288 - 19s - loss: 0.2587 - accuracy: 0.9256 - auc: 0.9719 - val_loss: 0.1845 - val_accuracy: 0.9478 - val_auc: 0.9780 - lr: 5.0000e-04 - 19s/epoch - 67ms/step
+Epoch 4/50
+288/288 - 19s - loss: 0.2430 - accuracy: 0.9216 - auc: 0.9740 - val_loss: 0.1728 - val_accuracy: 0.9513 - val_auc: 0.9835 - lr: 5.0000e-04 - 19s/epoch - 67ms/step
+Epoch 5/50
+288/288 - 19s - loss: 0.2379 - accuracy: 0.9251 - auc: 0.9755 - val_loss: 0.1441 - val_accuracy: 0.9583 - val_auc: 0.9864 - lr: 5.0000e-04 - 19s/epoch - 67ms/step
+Epoch 6/50
+288/288 - 19s - loss: 0.2457 - accuracy: 0.9295 - auc: 0.9729 - val_loss: 0.1670 - val_accuracy: 0.9443 - val_auc: 0.9829 - lr: 5.0000e-04 - 19s/epoch - 67ms/step
+Epoch 7/50
+288/288 - 19s - loss: 0.2325 - accuracy: 0.9312 - auc: 0.9764 - val_loss: 0.1652 - val_accuracy: 0.9513 - val_auc: 0.9821 - lr: 5.0000e-04 - 19s/epoch - 67ms/step
+18/18 [==============================] - 1s 45ms/step
++ Test accuracy at epoch 17 is: 95.83
++ Test AUC at epoch 17 is: 98.600
++ Writing kaggle test results in : results/epoch-17-results.csv...
+7/7 [==============================] - 0s 39ms/step
++ Saved Kaggle predictions to epoch-17-results.csv
+
+
+------------------------------------------------------------------------
+
+Epoch 18/30
+Epoch 1/50
+288/288 - 19s - loss: 0.2338 - accuracy: 0.9299 - auc: 0.9756 - val_loss: 0.1908 - val_accuracy: 0.9374 - val_auc: 0.9801 - lr: 5.0000e-04 - 19s/epoch - 67ms/step
+Epoch 2/50
+288/288 - 20s - loss: 0.2285 - accuracy: 0.9299 - auc: 0.9772 - val_loss: 0.1627 - val_accuracy: 0.9496 - val_auc: 0.9834 - lr: 5.0000e-04 - 20s/epoch - 68ms/step
+Epoch 3/50
+288/288 - 19s - loss: 0.2449 - accuracy: 0.9260 - auc: 0.9744 - val_loss: 0.1980 - val_accuracy: 0.9270 - val_auc: 0.9755 - lr: 5.0000e-04 - 19s/epoch - 67ms/step
+Epoch 4/50
+288/288 - 19s - loss: 0.2234 - accuracy: 0.9343 - auc: 0.9780 - val_loss: 0.1753 - val_accuracy: 0.9357 - val_auc: 0.9811 - lr: 5.0000e-04 - 19s/epoch - 67ms/step
+18/18 [==============================] - 1s 46ms/step
++ Test accuracy at epoch 18 is: 94.96
++ Test AUC at epoch 18 is: 98.290
+
+------------------------------------------------------------------------
+
+Epoch 19/30
+Epoch 1/50
+288/288 - 20s - loss: 0.2518 - accuracy: 0.9164 - auc: 0.9731 - val_loss: 0.1851 - val_accuracy: 0.9496 - val_auc: 0.9806 - lr: 5.0000e-04 - 20s/epoch - 69ms/step
+Epoch 2/50
+288/288 - 19s - loss: 0.2351 - accuracy: 0.9238 - auc: 0.9760 - val_loss: 0.1866 - val_accuracy: 0.9443 - val_auc: 0.9796 - lr: 5.0000e-04 - 19s/epoch - 67ms/step
+Epoch 3/50
+288/288 - 19s - loss: 0.2207 - accuracy: 0.9290 - auc: 0.9785 - val_loss: 0.1639 - val_accuracy: 0.9461 - val_auc: 0.9826 - lr: 5.0000e-04 - 19s/epoch - 66ms/step
+Epoch 4/50
+288/288 - 18s - loss: 0.2318 - accuracy: 0.9312 - auc: 0.9770 - val_loss: 0.1703 - val_accuracy: 0.9478 - val_auc: 0.9852 - lr: 5.0000e-04 - 18s/epoch - 63ms/step
+Epoch 5/50
+288/288 - 18s - loss: 0.2278 - accuracy: 0.9356 - auc: 0.9768 - val_loss: 0.1469 - val_accuracy: 0.9600 - val_auc: 0.9853 - lr: 5.0000e-04 - 18s/epoch - 64ms/step
+Epoch 6/50
+288/288 - 18s - loss: 0.2484 - accuracy: 0.9282 - auc: 0.9737 - val_loss: 0.1661 - val_accuracy: 0.9478 - val_auc: 0.9831 - lr: 5.0000e-04 - 18s/epoch - 63ms/step
+Epoch 7/50
+288/288 - 19s - loss: 0.2184 - accuracy: 0.9343 - auc: 0.9786 - val_loss: 0.1934 - val_accuracy: 0.9252 - val_auc: 0.9769 - lr: 5.0000e-04 - 19s/epoch - 65ms/step
+18/18 [==============================] - 1s 43ms/step
++ Test accuracy at epoch 19 is: 96.00
++ Test AUC at epoch 19 is: 98.520
+
+------------------------------------------------------------------------
+
+Epoch 20/30
+Epoch 1/50
+288/288 - 18s - loss: 0.2151 - accuracy: 0.9369 - auc: 0.9786 - val_loss: 0.1934 - val_accuracy: 0.9270 - val_auc: 0.9758 - lr: 5.0000e-04 - 18s/epoch - 63ms/step
+Epoch 2/50
+288/288 - 18s - loss: 0.2132 - accuracy: 0.9356 - auc: 0.9798 - val_loss: 0.1708 - val_accuracy: 0.9426 - val_auc: 0.9814 - lr: 5.0000e-04 - 18s/epoch - 63ms/step
+Epoch 3/50
+288/288 - 18s - loss: 0.2287 - accuracy: 0.9325 - auc: 0.9772 - val_loss: 0.2046 - val_accuracy: 0.9235 - val_auc: 0.9732 - lr: 5.0000e-04 - 18s/epoch - 64ms/step
+Epoch 4/50
+288/288 - 19s - loss: 0.2149 - accuracy: 0.9373 - auc: 0.9803 - val_loss: 0.1599 - val_accuracy: 0.9478 - val_auc: 0.9837 - lr: 5.0000e-04 - 19s/epoch - 66ms/step
+Epoch 5/50
+288/288 - 19s - loss: 0.2434 - accuracy: 0.9238 - auc: 0.9746 - val_loss: 0.1712 - val_accuracy: 0.9443 - val_auc: 0.9806 - lr: 5.0000e-04 - 19s/epoch - 65ms/step
+Epoch 6/50
+288/288 - 19s - loss: 0.2144 - accuracy: 0.9330 - auc: 0.9799 - val_loss: 0.1669 - val_accuracy: 0.9513 - val_auc: 0.9840 - lr: 5.0000e-04 - 19s/epoch - 65ms/step
+Epoch 7/50
+288/288 - 19s - loss: 0.2270 - accuracy: 0.9369 - auc: 0.9774 - val_loss: 0.1522 - val_accuracy: 0.9478 - val_auc: 0.9859 - lr: 5.0000e-04 - 19s/epoch - 65ms/step
+Epoch 8/50
+288/288 - 19s - loss: 0.2216 - accuracy: 0.9330 - auc: 0.9786 - val_loss: 0.1525 - val_accuracy: 0.9496 - val_auc: 0.9855 - lr: 5.0000e-04 - 19s/epoch - 65ms/step
+Epoch 9/50
+288/288 - 19s - loss: 0.2293 - accuracy: 0.9299 - auc: 0.9769 - val_loss: 0.1573 - val_accuracy: 0.9513 - val_auc: 0.9829 - lr: 5.0000e-04 - 19s/epoch - 66ms/step
+18/18 [==============================] - 1s 47ms/step
++ Test accuracy at epoch 20 is: 94.78
++ Test AUC at epoch 20 is: 98.570
+
+------------------------------------------------------------------------
+
+Epoch 21/30
+Epoch 1/50
+288/288 - 19s - loss: 0.2358 - accuracy: 0.9347 - auc: 0.9749 - val_loss: 0.2157 - val_accuracy: 0.9183 - val_auc: 0.9714 - lr: 5.0000e-04 - 19s/epoch - 68ms/step
+Epoch 2/50
+288/288 - 19s - loss: 0.2348 - accuracy: 0.9256 - auc: 0.9764 - val_loss: 0.1693 - val_accuracy: 0.9478 - val_auc: 0.9817 - lr: 5.0000e-04 - 19s/epoch - 67ms/step
+Epoch 3/50
+288/288 - 19s - loss: 0.2173 - accuracy: 0.9260 - auc: 0.9797 - val_loss: 0.1687 - val_accuracy: 0.9426 - val_auc: 0.9812 - lr: 5.0000e-04 - 19s/epoch - 67ms/step
+Epoch 4/50
+288/288 - 20s - loss: 0.2422 - accuracy: 0.9229 - auc: 0.9751 - val_loss: 0.1516 - val_accuracy: 0.9478 - val_auc: 0.9856 - lr: 5.0000e-04 - 20s/epoch - 68ms/step
+Epoch 5/50
+288/288 - 19s - loss: 0.2071 - accuracy: 0.9338 - auc: 0.9814 - val_loss: 0.1524 - val_accuracy: 0.9496 - val_auc: 0.9855 - lr: 5.0000e-04 - 19s/epoch - 67ms/step
+Epoch 6/50
+288/288 - 19s - loss: 0.2258 - accuracy: 0.9316 - auc: 0.9772 - val_loss: 0.1729 - val_accuracy: 0.9426 - val_auc: 0.9807 - lr: 5.0000e-04 - 19s/epoch - 66ms/step
+18/18 [==============================] - 1s 44ms/step
++ Test accuracy at epoch 21 is: 94.78
++ Test AUC at epoch 21 is: 98.520
+
+------------------------------------------------------------------------
+
+Epoch 22/30
+Epoch 1/50
+288/288 - 19s - loss: 0.2122 - accuracy: 0.9343 - auc: 0.9803 - val_loss: 0.1572 - val_accuracy: 0.9443 - val_auc: 0.9835 - lr: 5.0000e-04 - 19s/epoch - 67ms/step
+Epoch 2/50
+288/288 - 19s - loss: 0.2010 - accuracy: 0.9356 - auc: 0.9820 - val_loss: 0.1546 - val_accuracy: 0.9513 - val_auc: 0.9838 - lr: 5.0000e-04 - 19s/epoch - 68ms/step
+Epoch 3/50
+288/288 - 19s - loss: 0.2222 - accuracy: 0.9273 - auc: 0.9790 - val_loss: 0.1618 - val_accuracy: 0.9391 - val_auc: 0.9844 - lr: 5.0000e-04 - 19s/epoch - 65ms/step
+Epoch 4/50
+288/288 - 18s - loss: 0.2136 - accuracy: 0.9382 - auc: 0.9797 - val_loss: 0.1647 - val_accuracy: 0.9391 - val_auc: 0.9828 - lr: 5.0000e-04 - 18s/epoch - 64ms/step
+Epoch 5/50
+288/288 - 18s - loss: 0.2187 - accuracy: 0.9321 - auc: 0.9792 - val_loss: 0.2217 - val_accuracy: 0.9096 - val_auc: 0.9694 - lr: 5.0000e-04 - 18s/epoch - 64ms/step
+18/18 [==============================] - 1s 42ms/step
++ Test accuracy at epoch 22 is: 93.91
++ Test AUC at epoch 22 is: 98.350
+
+------------------------------------------------------------------------
+
+Epoch 23/30
+Epoch 1/50
+288/288 - 18s - loss: 0.2282 - accuracy: 0.9325 - auc: 0.9769 - val_loss: 0.1836 - val_accuracy: 0.9374 - val_auc: 0.9767 - lr: 5.0000e-04 - 18s/epoch - 64ms/step
+Epoch 2/50
+288/288 - 18s - loss: 0.2251 - accuracy: 0.9386 - auc: 0.9777 - val_loss: 0.1782 - val_accuracy: 0.9304 - val_auc: 0.9820 - lr: 5.0000e-04 - 18s/epoch - 64ms/step
+Epoch 3/50
+288/288 - 18s - loss: 0.2099 - accuracy: 0.9404 - auc: 0.9806 - val_loss: 0.1408 - val_accuracy: 0.9548 - val_auc: 0.9867 - lr: 5.0000e-04 - 18s/epoch - 64ms/step
+Epoch 4/50
+288/288 - 18s - loss: 0.2192 - accuracy: 0.9351 - auc: 0.9786 - val_loss: 0.1791 - val_accuracy: 0.9443 - val_auc: 0.9794 - lr: 5.0000e-04 - 18s/epoch - 63ms/step
+Epoch 5/50
+288/288 - 19s - loss: 0.2256 - accuracy: 0.9316 - auc: 0.9787 - val_loss: 0.1665 - val_accuracy: 0.9409 - val_auc: 0.9839 - lr: 5.0000e-04 - 19s/epoch - 65ms/step
+18/18 [==============================] - 1s 43ms/step
++ Test accuracy at epoch 23 is: 95.48
++ Test AUC at epoch 23 is: 98.710
++ Writing kaggle test results in : results/epoch-23-results.csv...
+7/7 [==============================] - 0s 38ms/step
++ Saved Kaggle predictions to epoch-23-results.csv
+
+
+------------------------------------------------------------------------
+
+Epoch 24/30
+Epoch 1/50
+288/288 - 19s - loss: 0.2067 - accuracy: 0.9356 - auc: 0.9813 - val_loss: 0.1585 - val_accuracy: 0.9478 - val_auc: 0.9836 - lr: 5.0000e-04 - 19s/epoch - 64ms/step
+Epoch 2/50
+288/288 - 19s - loss: 0.2144 - accuracy: 0.9312 - auc: 0.9799 - val_loss: 0.1628 - val_accuracy: 0.9409 - val_auc: 0.9829 - lr: 5.0000e-04 - 19s/epoch - 65ms/step
+Epoch 3/50
+288/288 - 18s - loss: 0.2195 - accuracy: 0.9386 - auc: 0.9788 - val_loss: 0.1545 - val_accuracy: 0.9426 - val_auc: 0.9840 - lr: 5.0000e-04 - 18s/epoch - 64ms/step
+Epoch 4/50
+288/288 - 18s - loss: 0.2188 - accuracy: 0.9325 - auc: 0.9787 - val_loss: 0.1648 - val_accuracy: 0.9443 - val_auc: 0.9822 - lr: 5.0000e-04 - 18s/epoch - 63ms/step
+Epoch 5/50
+288/288 - 18s - loss: 0.2069 - accuracy: 0.9343 - auc: 0.9813 - val_loss: 0.1634 - val_accuracy: 0.9461 - val_auc: 0.9830 - lr: 5.0000e-04 - 18s/epoch - 64ms/step
+18/18 [==============================] - 1s 42ms/step
++ Test accuracy at epoch 24 is: 94.26
++ Test AUC at epoch 24 is: 98.390
+
+------------------------------------------------------------------------
+
+Epoch 25/30
+Epoch 1/50
+288/288 - 19s - loss: 0.2110 - accuracy: 0.9343 - auc: 0.9807 - val_loss: 0.1560 - val_accuracy: 0.9496 - val_auc: 0.9846 - lr: 5.0000e-04 - 19s/epoch - 65ms/step
+Epoch 2/50
+288/288 - 18s - loss: 0.2154 - accuracy: 0.9325 - auc: 0.9790 - val_loss: 0.1568 - val_accuracy: 0.9443 - val_auc: 0.9835 - lr: 5.0000e-04 - 18s/epoch - 64ms/step
+Epoch 3/50
+288/288 - 18s - loss: 0.2187 - accuracy: 0.9312 - auc: 0.9794 - val_loss: 0.1682 - val_accuracy: 0.9443 - val_auc: 0.9824 - lr: 5.0000e-04 - 18s/epoch - 64ms/step
+18/18 [==============================] - 1s 42ms/step
++ Test accuracy at epoch 25 is: 94.96
++ Test AUC at epoch 25 is: 98.480
+
+------------------------------------------------------------------------
+
+Epoch 26/30
+Epoch 1/50
+288/288 - 18s - loss: 0.2147 - accuracy: 0.9360 - auc: 0.9798 - val_loss: 0.1532 - val_accuracy: 0.9478 - val_auc: 0.9845 - lr: 5.0000e-04 - 18s/epoch - 64ms/step
+Epoch 2/50
+288/288 - 19s - loss: 0.2189 - accuracy: 0.9325 - auc: 0.9793 - val_loss: 0.1655 - val_accuracy: 0.9478 - val_auc: 0.9824 - lr: 5.0000e-04 - 19s/epoch - 66ms/step
+Epoch 3/50
+288/288 - 19s - loss: 0.2168 - accuracy: 0.9373 - auc: 0.9797 - val_loss: 0.1862 - val_accuracy: 0.9391 - val_auc: 0.9763 - lr: 5.0000e-04 - 19s/epoch - 65ms/step
+18/18 [==============================] - 1s 43ms/step
++ Test accuracy at epoch 26 is: 94.78
++ Test AUC at epoch 26 is: 98.460
+
+------------------------------------------------------------------------
+
+Epoch 27/30
+Epoch 1/50
+288/288 - 19s - loss: 0.2336 - accuracy: 0.9316 - auc: 0.9763 - val_loss: 0.1538 - val_accuracy: 0.9443 - val_auc: 0.9853 - lr: 5.0000e-04 - 19s/epoch - 64ms/step
+Epoch 2/50
+288/288 - 19s - loss: 0.1995 - accuracy: 0.9373 - auc: 0.9825 - val_loss: 0.1819 - val_accuracy: 0.9357 - val_auc: 0.9782 - lr: 5.0000e-04 - 19s/epoch - 65ms/step
+Epoch 3/50
+288/288 - 18s - loss: 0.2142 - accuracy: 0.9347 - auc: 0.9792 - val_loss: 0.1588 - val_accuracy: 0.9461 - val_auc: 0.9854 - lr: 5.0000e-04 - 18s/epoch - 64ms/step
+Epoch 4/50
+288/288 - 18s - loss: 0.2188 - accuracy: 0.9356 - auc: 0.9794 - val_loss: 0.1925 - val_accuracy: 0.9409 - val_auc: 0.9757 - lr: 5.0000e-04 - 18s/epoch - 63ms/step
+Epoch 5/50
+288/288 - 18s - loss: 0.1992 - accuracy: 0.9369 - auc: 0.9826 - val_loss: 0.1449 - val_accuracy: 0.9548 - val_auc: 0.9868 - lr: 2.5000e-04 - 18s/epoch - 64ms/step
+Epoch 6/50
+288/288 - 19s - loss: 0.1893 - accuracy: 0.9382 - auc: 0.9840 - val_loss: 0.1569 - val_accuracy: 0.9443 - val_auc: 0.9850 - lr: 2.5000e-04 - 19s/epoch - 64ms/step
+Epoch 7/50
+288/288 - 19s - loss: 0.1779 - accuracy: 0.9443 - auc: 0.9863 - val_loss: 0.1504 - val_accuracy: 0.9461 - val_auc: 0.9860 - lr: 2.5000e-04 - 19s/epoch - 66ms/step
+18/18 [==============================] - 1s 43ms/step
++ Test accuracy at epoch 27 is: 95.48
++ Test AUC at epoch 27 is: 98.670
+
+------------------------------------------------------------------------
+
+Epoch 28/30
+Epoch 1/50
+288/288 - 19s - loss: 0.1936 - accuracy: 0.9364 - auc: 0.9832 - val_loss: 0.1603 - val_accuracy: 0.9478 - val_auc: 0.9833 - lr: 2.5000e-04 - 19s/epoch - 67ms/step
+Epoch 2/50
+288/288 - 19s - loss: 0.2024 - accuracy: 0.9373 - auc: 0.9820 - val_loss: 0.1545 - val_accuracy: 0.9461 - val_auc: 0.9855 - lr: 2.5000e-04 - 19s/epoch - 66ms/step
+Epoch 3/50
+288/288 - 19s - loss: 0.1912 - accuracy: 0.9373 - auc: 0.9837 - val_loss: 0.1443 - val_accuracy: 0.9513 - val_auc: 0.9868 - lr: 2.5000e-04 - 19s/epoch - 66ms/step
+Epoch 4/50
+288/288 - 19s - loss: 0.1962 - accuracy: 0.9377 - auc: 0.9833 - val_loss: 0.1423 - val_accuracy: 0.9565 - val_auc: 0.9875 - lr: 2.5000e-04 - 19s/epoch - 67ms/step
+Epoch 5/50
+288/288 - 19s - loss: 0.2014 - accuracy: 0.9408 - auc: 0.9817 - val_loss: 0.1545 - val_accuracy: 0.9443 - val_auc: 0.9853 - lr: 2.5000e-04 - 19s/epoch - 67ms/step
+Epoch 6/50
+288/288 - 19s - loss: 0.1857 - accuracy: 0.9443 - auc: 0.9844 - val_loss: 0.1515 - val_accuracy: 0.9443 - val_auc: 0.9856 - lr: 2.5000e-04 - 19s/epoch - 67ms/step
+18/18 [==============================] - 1s 44ms/step
++ Test accuracy at epoch 28 is: 95.65
++ Test AUC at epoch 28 is: 98.750
++ Writing kaggle test results in : results/epoch-28-results.csv...
+7/7 [==============================] - 0s 38ms/step
++ Saved Kaggle predictions to epoch-28-results.csv
+
+
+------------------------------------------------------------------------
+
+Epoch 29/30
+Epoch 1/50
+288/288 - 19s - loss: 0.1959 - accuracy: 0.9377 - auc: 0.9826 - val_loss: 0.1501 - val_accuracy: 0.9478 - val_auc: 0.9859 - lr: 2.5000e-04 - 19s/epoch - 67ms/step
+Epoch 2/50
+288/288 - 19s - loss: 0.1874 - accuracy: 0.9473 - auc: 0.9842 - val_loss: 0.1613 - val_accuracy: 0.9374 - val_auc: 0.9843 - lr: 2.5000e-04 - 19s/epoch - 67ms/step
+Epoch 3/50
+288/288 - 19s - loss: 0.1976 - accuracy: 0.9347 - auc: 0.9825 - val_loss: 0.1606 - val_accuracy: 0.9443 - val_auc: 0.9841 - lr: 2.5000e-04 - 19s/epoch - 68ms/step
+18/18 [==============================] - 1s 45ms/step
++ Test accuracy at epoch 29 is: 94.78
++ Test AUC at epoch 29 is: 98.590
+
+------------------------------------------------------------------------
+
+Epoch 30/30
+Epoch 1/50
+288/288 - 20s - loss: 0.2028 - accuracy: 0.9356 - auc: 0.9822 - val_loss: 0.1507 - val_accuracy: 0.9426 - val_auc: 0.9861 - lr: 2.5000e-04 - 20s/epoch - 68ms/step
+Epoch 2/50
+288/288 - 19s - loss: 0.1871 - accuracy: 0.9338 - auc: 0.9848 - val_loss: 0.1453 - val_accuracy: 0.9496 - val_auc: 0.9872 - lr: 2.5000e-04 - 19s/epoch - 68ms/step
+Epoch 3/50
+288/288 - 19s - loss: 0.1970 - accuracy: 0.9325 - auc: 0.9832 - val_loss: 0.1707 - val_accuracy: 0.9357 - val_auc: 0.9820 - lr: 2.5000e-04 - 19s/epoch - 67ms/step
+Epoch 4/50
+288/288 - 19s - loss: 0.1922 - accuracy: 0.9369 - auc: 0.9841 - val_loss: 0.1721 - val_accuracy: 0.9322 - val_auc: 0.9806 - lr: 2.5000e-04 - 19s/epoch - 68ms/step
+18/18 [==============================] - 1s 44ms/step
++ Test accuracy at epoch 30 is: 94.96
++ Test AUC at epoch 30 is: 98.650
+
+------------------------------------------------------------------------
+
+------------------------------------------------------------------------
+*** Best AUC achieved: 98.750 at epoch 28 ***
+------------------------------------------------------------------------
+
+*** Printing our best validation results from epoch 28 ...
+------------------------------------------------------------------------
+Accuracy: 95.65
+PrecisionNegative: 96.47
+PrecisionPositive: 94.86
+RecallNegative: 94.79
+RecallPositive: 96.52
+AUC Score: 98.75
+------------------------------------------------------------------------
++ Printing confusion matrix...
+</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="cnn_pneumonia_files/figure-html/cell-23-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>+ Printing ROC curve...
+</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="cnn_pneumonia_files/figure-html/cell-23-output-4.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display" data-execution_count="22">
+<pre><code>98.75</code></pre>
+</div>
+</div>
+</section>
+</section>
+<section id="top-n-predictions" class="level2">
+<h2 class="anchored" data-anchor-id="top-n-predictions">4.4 Top n% Predictions</h2>
+<div id="cell-40" class="cell" data-cell_id="843edb627e434333907895c8b2d1d525" data-deepnote_cell_type="code" data-deepnote_to_be_reexecuted="false" data-execution_millis="115" data-execution_start="1673120486279" data-source_hash="e40791d1" data-execution_count="23">
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="co">################################## You can change values inside the following list ###########################</span></span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>topNValues <span class="op">=</span> [<span class="dv">5</span>, <span class="dv">10</span>, <span class="dv">20</span>, <span class="dv">30</span>]</span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a><span class="co">##############################################################################################################</span></span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a>accuraciesHealthy, accuraciesPneumonia <span class="op">=</span> [], []</span>
+<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> topn <span class="kw">in</span> topNValues:</span>
+<span id="cb36-7"><a href="#cb36-7" aria-hidden="true" tabindex="-1"></a>    accuracyHealthy, accuracyPneumonia <span class="op">=</span> calculateClasswiseTopNAccuracy(testLabels, bestAccPredictionProbabilities, topn)</span>
+<span id="cb36-8"><a href="#cb36-8" aria-hidden="true" tabindex="-1"></a>    accuraciesHealthy.append(accuracyHealthy)</span>
+<span id="cb36-9"><a href="#cb36-9" aria-hidden="true" tabindex="-1"></a>    accuraciesPneumonia.append(accuracyPneumonia)</span>
+<span id="cb36-10"><a href="#cb36-10" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb36-11"><a href="#cb36-11" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"+ Accuracy for top </span><span class="sc">%d</span><span class="st"> percent predictions for healthy: </span><span class="sc">%.2f</span><span class="st">, pneumonia: </span><span class="sc">%.2f</span><span class="st">"</span> <span class="op">%</span> (topn, accuracyHealthy, accuracyPneumonia))</span>
+<span id="cb36-12"><a href="#cb36-12" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb36-13"><a href="#cb36-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot results</span></span>
+<span id="cb36-14"><a href="#cb36-14" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> np.arange(<span class="bu">len</span>(accuraciesHealthy))</span>
+<span id="cb36-15"><a href="#cb36-15" aria-hidden="true" tabindex="-1"></a>plt.plot(x, accuraciesHealthy, linewidth <span class="op">=</span> <span class="dv">3</span>, color <span class="op">=</span> <span class="st">'#e01111'</span>)</span>
+<span id="cb36-16"><a href="#cb36-16" aria-hidden="true" tabindex="-1"></a>scatterHealthy <span class="op">=</span> plt.scatter(x, accuraciesHealthy, marker <span class="op">=</span> <span class="st">'s'</span>, s <span class="op">=</span> <span class="dv">100</span>, color <span class="op">=</span> <span class="st">'#e01111'</span>)</span>
+<span id="cb36-17"><a href="#cb36-17" aria-hidden="true" tabindex="-1"></a>plt.plot(x, accuraciesPneumonia, linewidth <span class="op">=</span> <span class="dv">3</span>, color <span class="op">=</span> <span class="st">'#0072ff'</span>)</span>
+<span id="cb36-18"><a href="#cb36-18" aria-hidden="true" tabindex="-1"></a>scatterPneumonia <span class="op">=</span> plt.scatter(x, accuraciesPneumonia, marker <span class="op">=</span> <span class="st">'o'</span>, s <span class="op">=</span> <span class="dv">100</span>, color <span class="op">=</span> <span class="st">'#0072ff'</span>)</span>
+<span id="cb36-19"><a href="#cb36-19" aria-hidden="true" tabindex="-1"></a>plt.xticks(x, topNValues, fontsize <span class="op">=</span> <span class="dv">15</span>)</span>
+<span id="cb36-20"><a href="#cb36-20" aria-hidden="true" tabindex="-1"></a>plt.yticks(fontsize <span class="op">=</span> <span class="dv">15</span>)</span>
+<span id="cb36-21"><a href="#cb36-21" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">"Top N%"</span>, fontsize <span class="op">=</span> <span class="dv">15</span>)</span>
+<span id="cb36-22"><a href="#cb36-22" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">"Accuracy"</span>, fontsize <span class="op">=</span> <span class="dv">15</span>)</span>
+<span id="cb36-23"><a href="#cb36-23" aria-hidden="true" tabindex="-1"></a>plt.legend([scatterHealthy, scatterPneumonia], [<span class="st">"Accuracy for Healthy"</span>, <span class="st">"Accuracy for Pneumonia"</span>], fontsize <span class="op">=</span> <span class="dv">17</span>)</span>
+<span id="cb36-24"><a href="#cb36-24" aria-hidden="true" tabindex="-1"></a>plt.ylim(<span class="dv">0</span>, <span class="dv">110</span>)</span>
+<span id="cb36-25"><a href="#cb36-25" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>+ Accuracy for top 5 percent predictions for healthy: 100.00, pneumonia: 100.00
++ Accuracy for top 10 percent predictions for healthy: 100.00, pneumonia: 100.00
++ Accuracy for top 20 percent predictions for healthy: 100.00, pneumonia: 100.00
++ Accuracy for top 30 percent predictions for healthy: 100.00, pneumonia: 100.00</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="cnn_pneumonia_files/figure-html/cell-24-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="cell-41" class="cell" data-execution_count="27">
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>optimizedModel.save_weights(<span class="st">"best_model_weights.h5"</span>)  <span class="co"># Saves only weights</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-42" class="cell" data-execution_count="28">
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Rebuild the model architecture first</span></span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>optimizedModel <span class="op">=</span> createOptimizedCNN(trainData.shape[<span class="dv">1</span>:], numClasses)  </span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the saved weights</span></span>
+<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a>optimizedModel.load_weights(<span class="st">"best_model_weights.h5"</span>)  </span>
+<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-7"><a href="#cb39-7" aria-hidden="true" tabindex="-1"></a></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="cell-43" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> tensorflow <span class="im">as</span> tf</span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> tensorflow.keras.utils <span class="im">import</span> plot_model</span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Rebuild the model architecture first</span></span>
+<span id="cb40-6"><a href="#cb40-6" aria-hidden="true" tabindex="-1"></a>optimizedModel <span class="op">=</span> createOptimizedCNN(trainData.shape[<span class="dv">1</span>:], numClasses)  </span>
+<span id="cb40-7"><a href="#cb40-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-8"><a href="#cb40-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the saved weights</span></span>
+<span id="cb40-9"><a href="#cb40-9" aria-hidden="true" tabindex="-1"></a>optimizedModel.load_weights(<span class="st">"best_model_weights.h5"</span>)  </span>
+<span id="cb40-10"><a href="#cb40-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-11"><a href="#cb40-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Generate and save model visualization</span></span>
+<span id="cb40-12"><a href="#cb40-12" aria-hidden="true" tabindex="-1"></a>plot_model(optimizedModel, to_file<span class="op">=</span><span class="st">"model_architecture.png"</span>, show_shapes<span class="op">=</span><span class="va">True</span>, show_layer_names<span class="op">=</span><span class="va">True</span>, expand_nested<span class="op">=</span><span class="va">True</span>, dpi<span class="op">=</span><span class="dv">96</span>)</span>
+<span id="cb40-13"><a href="#cb40-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb40-14"><a href="#cb40-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Display the model image</span></span>
+<span id="cb40-15"><a href="#cb40-15" aria-hidden="true" tabindex="-1"></a>img <span class="op">=</span> plt.imread(<span class="st">"model_architecture.png"</span>)</span>
+<span id="cb40-16"><a href="#cb40-16" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">12</span>, <span class="dv">12</span>))</span>
+<span id="cb40-17"><a href="#cb40-17" aria-hidden="true" tabindex="-1"></a>plt.imshow(img)</span>
+<span id="cb40-18"><a href="#cb40-18" aria-hidden="true" tabindex="-1"></a>plt.axis(<span class="st">"off"</span>)</span>
+<span id="cb40-19"><a href="#cb40-19" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb40-20"><a href="#cb40-20" aria-hidden="true" tabindex="-1"></a></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>2025-02-27 06:07:50.018149: I tensorflow/core/util/port.cc:110] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+2025-02-27 06:07:50.595245: I tensorflow/core/platform/cpu_feature_guard.cc:182] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: AVX2 AVX512F AVX512_VNNI FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+WARNING:root:Limited tf.compat.v2.summary API due to missing TensorBoard installation.
+WARNING:root:Limited tf.compat.v2.summary API due to missing TensorBoard installation.
+WARNING:root:Limited tf.compat.v2.summary API due to missing TensorBoard installation.
+WARNING:root:Limited tf.summary API due to missing TensorBoard installation.
+2025-02-27 06:07:52.597924: E tensorflow/compiler/xla/stream_executor/cuda/cuda_driver.cc:268] failed call to cuInit: CUDA_ERROR_NO_DEVICE: no CUDA-capable device is detected
+WARNING:root:Limited tf.compat.v2.summary API due to missing TensorBoard installation.
+WARNING:root:Limited tf.compat.v2.summary API due to missing TensorBoard installation.
+WARNING:root:Limited tf.compat.v2.summary API due to missing TensorBoard installation.</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>VOC-NOTICE: GPU memory for this assignment is capped at 1024MiB
+VOC-NOTICE: GPU memory for this assignment is capped at 1024MiB</code></pre>
+</div>
+<div class="cell-output cell-output-error">
+<div class="ansi-escaped-output">
+<pre><span class="ansi-red-fg">---------------------------------------------------------------------------</span>
+<span class="ansi-red-fg">NameError</span>                                 Traceback (most recent call last)
+<span class="ansi-green-fg">/tmp/ipykernel_9423/2837850090.py</span> in <span class="ansi-cyan-fg">&lt;cell line: 6&gt;</span><span class="ansi-blue-fg">()</span>
+<span class="ansi-green-fg ansi-bold">      4</span> 
+<span class="ansi-green-fg ansi-bold">      5</span> <span class="ansi-red-fg"># Rebuild the model architecture first</span>
+<span class="ansi-green-fg">----&gt; 6</span><span class="ansi-red-fg"> </span>optimizedModel <span class="ansi-blue-fg">=</span> createOptimizedCNN<span class="ansi-blue-fg">(</span>trainData<span class="ansi-blue-fg">.</span>shape<span class="ansi-blue-fg">[</span><span class="ansi-cyan-fg">1</span><span class="ansi-blue-fg">:</span><span class="ansi-blue-fg">]</span><span class="ansi-blue-fg">,</span> numClasses<span class="ansi-blue-fg">)</span>
+<span class="ansi-green-fg ansi-bold">      7</span> 
+<span class="ansi-green-fg ansi-bold">      8</span> <span class="ansi-red-fg"># Load the saved weights</span>
+
+<span class="ansi-red-fg">NameError</span>: name 'createOptimizedCNN' is not defined</pre>
+</div>
+</div>
+</div>
+<p><a style="text-decoration:none;line-height:16px;display:flex;color:#5B5B62;padding:10px;justify-content:end;" href="https://deepnote.com?utm_source=created-in-deepnote-cell&amp;projectId=2da7edf6-dcd9-4d26-8af1-b990b67baf63" target="_blank"> <img alt="Created in deepnote.com" style="display:inline;max-height:16px;margin:0px;margin-right:7.5px;" src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyB3aWR0aD0iODBweCIgaGVpZ2h0PSI4MHB4IiB2aWV3Qm94PSIwIDAgODAgODAiIHZlcnNpb249IjEuMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayI+CiAgICA8IS0tIEdlbmVyYXRvcjogU2tldGNoIDU0LjEgKDc2NDkwKSAtIGh0dHBzOi8vc2tldGNoYXBwLmNvbSAtLT4KICAgIDx0aXRsZT5Hcm91cCAzPC90aXRsZT4KICAgIDxkZXNjPkNyZWF0ZWQgd2l0aCBTa2V0Y2guPC9kZXNjPgogICAgPGcgaWQ9IkxhbmRpbmciIHN0cm9rZT0ibm9uZSIgc3Ryb2tlLXdpZHRoPSIxIiBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPgogICAgICAgIDxnIGlkPSJBcnRib2FyZCIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoLTEyMzUuMDAwMDAwLCAtNzkuMDAwMDAwKSI+CiAgICAgICAgICAgIDxnIGlkPSJHcm91cC0zIiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxMjM1LjAwMDAwMCwgNzkuMDAwMDAwKSI+CiAgICAgICAgICAgICAgICA8cG9seWdvbiBpZD0iUGF0aC0yMCIgZmlsbD0iIzAyNjVCNCIgcG9pbnRzPSIyLjM3NjIzNzYyIDgwIDM4LjA0NzY2NjcgODAgNTcuODIxNzgyMiA3My44MDU3NTkyIDU3LjgyMTc4MjIgMzIuNzU5MjczOSAzOS4xNDAyMjc4IDMxLjY4MzE2ODMiPjwvcG9seWdvbj4KICAgICAgICAgICAgICAgIDxwYXRoIGQ9Ik0zNS4wMDc3MTgsODAgQzQyLjkwNjIwMDcsNzYuNDU0OTM1OCA0Ny41NjQ5MTY3LDcxLjU0MjI2NzEgNDguOTgzODY2LDY1LjI2MTk5MzkgQzUxLjExMjI4OTksNTUuODQxNTg0MiA0MS42NzcxNzk1LDQ5LjIxMjIyODQgMjUuNjIzOTg0Niw0OS4yMTIyMjg0IEMyNS40ODQ5Mjg5LDQ5LjEyNjg0NDggMjkuODI2MTI5Niw0My4yODM4MjQ4IDM4LjY0NzU4NjksMzEuNjgzMTY4MyBMNzIuODcxMjg3MSwzMi41NTQ0MjUgTDY1LjI4MDk3Myw2Ny42NzYzNDIxIEw1MS4xMTIyODk5LDc3LjM3NjE0NCBMMzUuMDA3NzE4LDgwIFoiIGlkPSJQYXRoLTIyIiBmaWxsPSIjMDAyODY4Ij48L3BhdGg+CiAgICAgICAgICAgICAgICA8cGF0aCBkPSJNMCwzNy43MzA0NDA1IEwyNy4xMTQ1MzcsMC4yNTcxMTE0MzYgQzYyLjM3MTUxMjMsLTEuOTkwNzE3MDEgODAsMTAuNTAwMzkyNyA4MCwzNy43MzA0NDA1IEM4MCw2NC45NjA0ODgyIDY0Ljc3NjUwMzgsNzkuMDUwMzQxNCAzNC4zMjk1MTEzLDgwIEM0Ny4wNTUzNDg5LDc3LjU2NzA4MDggNTMuNDE4MjY3Nyw3MC4zMTM2MTAzIDUzLjQxODI2NzcsNTguMjM5NTg4NSBDNTMuNDE4MjY3Nyw0MC4xMjg1NTU3IDM2LjMwMzk1NDQsMzcuNzMwNDQwNSAyNS4yMjc0MTcsMzcuNzMwNDQwNSBDMTcuODQzMDU4NiwzNy43MzA0NDA1IDkuNDMzOTE5NjYsMzcuNzMwNDQwNSAwLDM3LjczMDQ0MDUgWiIgaWQ9IlBhdGgtMTkiIGZpbGw9IiMzNzkzRUYiPjwvcGF0aD4KICAgICAgICAgICAgPC9nPgogICAgICAgIDwvZz4KICAgIDwvZz4KPC9zdmc+">  Created in <span style="font-weight:600;margin-left:4px;">Deepnote</span></a></p>
+</section>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
