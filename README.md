@@ -1,14 +1,14 @@
 # 🧠 CNN for Pneumonia Detection in Ugandan Children
 
-A deep learning project leveraging Convolutional Neural Networks (CNNs) to detect pneumonia from chest X-rays — built with the aim to reduce misdiagnosis and mortality in resource-constrained settings like Sub-Saharan Africa.
+A deep learning project leveraging Convolutional Neural Networks (CNNs) to detect pneumonia from chest X-rays — developed as part of a Gates Foundation pitch simulation for a graduate-level "Monetizing Machine Learning" course, with the aim to reduce misdiagnosis and mortality in resource-constrained settings like Sub-Saharan Africa.
 
 ---
 
 ## 🌍 Project Context
 
-Pneumonia is the **leading infectious killer of children under five** in Uganda, responsible for up to **16% of all child deaths**. Despite this, over **400,000 undiagnosed positive cases** go untreated due to **poor diagnostic access**.
+Pneumonia is a **leading cause of child mortality** in Uganda, contributing significantly to pediatric deaths. Many cases go undiagnosed due to **limited diagnostic access** in rural areas, creating a substantial healthcare gap.
 
-This project addresses that gap by fine-tuning a CNN architecture for high-accuracy image-based pneumonia detection. The model was later pitched as a scalable solution for real-world healthcare deployment in Uganda.
+This project addresses that gap by fine-tuning a CNN architecture for high-accuracy image-based pneumonia detection. The analysis included modeling a scalable deployment strategy for potential real-world healthcare implementation in Uganda.
 
 ---
 
@@ -40,19 +40,19 @@ cnn-pneumonia-detection/ ├
 
 - 📘 **Notebook**: [`cnn_pneumonia.ipynb`](cnn_pneumonia.ipynb)  
 - 📄 **HTML Report**: [`cnn_pneumonia.html`](cnn_pneumonia.html)  
-- 🧾 **Pitch Memo**: [`pneumonia_memo.pdf`](pneumonia_memo.pdf)  
-- 🎥 **Presentation Slides**: [`DeepLearningUganda.pdf`](DeepLearningUganda.pdf)
+- 🧾 **Business Case Memo**: [`pneumonia_memo.pdf`](pneumonia_memo.pdf)  
+- 🎥 **Final Presentation**: [`DeepLearningUganda.pdf`](DeepLearningUganda.pdf)
 
 ---
 
-## 🏥 Real-World Application: Uganda Deployment
+## 🏥 Gates Foundation Pitch Simulation: Uganda Deployment
 
-This project was pitched for deployment in Ugandan hospitals, backed by field-specific research and economic analysis.
+This project was developed as a comprehensive business case and pitched to simulated Gates Foundation stakeholders, backed by field-specific research and economic analysis as part of our "Monetizing Machine Learning" coursework.
 
-### Key Proposal Points:
-- **Pilot with 3 hospitals**, training staff and validating in-clinic model performance.
-- **Full-scale deployment to 50+ rural clinics** with offline functionality.
-- **Integration into national healthcare system** for long-term sustainability.
+### Key Proposal Components:
+- **Preliminary pilot program** with 10-15 rural clinics for initial validation and staff training.
+- **Modeled scaling strategy** projecting potential reach to thousands of children annually.
+- **Cost-benefit analysis** estimating up to 60% cost reduction vs. traditional radiologist diagnosis.
 
 Read the full memo: [`pneumonia_memo.pdf`](pneumonia_memo.pdf)
 
@@ -75,15 +75,14 @@ Master’s in Business Analytics — University of Notre Dame
 
 ---
 
-## 📌 Future Directions
+## 📌 Future Research Directions
 
-- Improve class balance through smarter oversampling
-- Integrate clinical metadata alongside X-ray imaging
-- Build a user-facing diagnostic app for clinics with limited radiologists
-- Integrate into a **mobile diagnostic app**
-- Validate performance on **real-world clinical images**
-- Extend the model to **multi-disease classification** (e.g. TB, Covid, asthma)
-- Partner with NGOs for **pilot deployment in Uganda**
+- Improve class balance through smarter oversampling techniques
+- Integrate clinical metadata alongside X-ray imaging for enhanced accuracy
+- Explore user-facing diagnostic applications for resource-limited settings
+- Validate model performance on **real-world clinical datasets**
+- Investigate **multi-disease classification** capabilities (TB, Covid, respiratory conditions)
+- Research partnership opportunities with NGOs for **potential pilot studies**
 
 
 ## 🤝 Acknowledgments
