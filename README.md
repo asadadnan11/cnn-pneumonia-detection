@@ -1,10 +1,10 @@
-# 🧠 CNN for Pneumonia Detection in Ugandan Children
+# CNN for Pneumonia Detection in Ugandan Children
 
 A deep learning project leveraging Convolutional Neural Networks (CNNs) to detect pneumonia from chest X-rays — developed as part of a Gates Foundation pitch simulation for a graduate-level "Monetizing Machine Learning" course, with the aim to reduce misdiagnosis and mortality in resource-constrained settings like Sub-Saharan Africa.
 
 ---
 
-## 🌍 Project Context
+## Project Context
 
 Pneumonia is a **leading cause of child mortality** in Uganda, contributing significantly to pediatric deaths. Many cases go undiagnosed due to **limited diagnostic access** in rural areas, creating a substantial healthcare gap.
 
@@ -12,7 +12,7 @@ This project addresses that gap by fine-tuning a CNN architecture for high-accur
 
 ---
 
-## 🧪 Model Highlights
+## Model Highlights
 
 | Model Type        | Accuracy | AUC     | Precision | Recall   |
 |-------------------|----------|---------|-----------|----------|
@@ -24,7 +24,7 @@ This project addresses that gap by fine-tuning a CNN architecture for high-accur
 
 ---
 
-## 🗂️ Repository Contents
+## Repository Contents
 ```
 cnn-pneumonia-detection/ ├
 ── cnn_pneumonia.ipynb # Notebook with full model tuning & metrics 
@@ -36,16 +36,16 @@ cnn-pneumonia-detection/ ├
 
 ---
 
-## 📑 Deliverables
+## Deliverables
 
-- 📘 **Notebook**: [`cnn_pneumonia.ipynb`](cnn_pneumonia.ipynb)  
-- 📄 **HTML Report**: [`cnn_pneumonia.html`](cnn_pneumonia.html)  
-- 🧾 **Business Case Memo**: [`pneumonia_memo.pdf`](pneumonia_memo.pdf)  
-- 🎥 **Final Presentation**: [`DeepLearningUganda.pdf`](DeepLearningUganda.pdf)
+- **Notebook**: [`cnn_pneumonia.ipynb`](cnn_pneumonia.ipynb)  
+- **HTML Report**: [`cnn_pneumonia.html`](cnn_pneumonia.html)  
+- **Business Case Memo**: [`pneumonia_memo.pdf`](pneumonia_memo.pdf)  
+- **Final Presentation**: [`DeepLearningUganda.pdf`](DeepLearningUganda.pdf)
 
 ---
 
-## 🏥 Gates Foundation Pitch Simulation: Uganda Deployment
+## Gates Foundation Pitch Simulation: Uganda Deployment
 
 This project was developed as a comprehensive business case and pitched to simulated Gates Foundation stakeholders, backed by field-specific research and economic analysis as part of our "Monetizing Machine Learning" coursework.
 
@@ -58,7 +58,7 @@ Read the full memo: [`pneumonia_memo.pdf`](pneumonia_memo.pdf)
 
 ---
 
-## 🚀 Technologies Used
+## Technologies Used
 
 - Python, Keras, TensorFlow
 - Jupyter Notebook
@@ -67,7 +67,7 @@ Read the full memo: [`pneumonia_memo.pdf`](pneumonia_memo.pdf)
 
 ---
 
-## 👤 Author
+## Author
 
 **Asad Adnan**  
 Master’s in Business Analytics — University of Notre Dame  
@@ -75,7 +75,7 @@ Master’s in Business Analytics — University of Notre Dame
 
 ---
 
-## 📌 Future Research Directions
+## Future Research Directions
 
 - Improve class balance through smarter oversampling techniques
 - Integrate clinical metadata alongside X-ray imaging for enhanced accuracy
@@ -85,7 +85,7 @@ Master’s in Business Analytics — University of Notre Dame
 - Research partnership opportunities with NGOs for **potential pilot studies**
 
 
-## 🤝 Acknowledgments
+## Acknowledgments
 
 - Instructor-provided base CNN architecture
 - Kaggle dataset on pediatric pneumonia X-rays
@@ -93,7 +93,7 @@ Master’s in Business Analytics — University of Notre Dame
 
 ---
 
-## 📢 License & Ethical Use
+## License & Ethical Use
 
 This model is built for **research and humanitarian purposes** only. Not to be used in place of certified clinical diagnosis without regulatory approval.
 
